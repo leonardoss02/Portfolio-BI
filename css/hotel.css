@@ -1,0 +1,1270 @@
+/* ═══════════════════════════════════════════════════════════════════════
+ * hotel.css — Gestão de Eventos (hotéis)
+ *
+ * Carregado SÓ por template/hotel.php, depois de bi-theme.css e escopado em
+ * .dash-hotel. Motivo: bi-theme.css é baixado por 14 dashboards; componentes
+ * exclusivos deste sistema (formulários, modais, calendário, avaliação por
+ * estrelas) penalizariam todos eles sem serem usados.
+ *
+ * Reaproveita os tokens do bi-theme (--card, --border, --text, --green,
+ * --amber, --danger...). Nenhuma cor literal em componente: tudo por
+ * variável, e é isso que dá o dark mode de graça.
+ *
+ * ── Regras deste arquivo ──────────────────────────────────────────────
+ *
+ *  1. Tipografia pelos degraus --fs-*. Nada de meio-pixel: a versão anterior
+ *     tinha 15 tamanhos distintos, cinco deles com casa decimal, o que é
+ *     micro-ajuste no lugar de régua. Dois tamanhos ficam FORA da escala de
+ *     leitura e estão declarados como tal — --fs-micro e --fs-nav.
+ *  2. Espaçamento ESTRUTURAL (o que separa blocos) só pelos --sp-1..--sp-6,
+ *     múltiplos de 4. Valor cru abaixo de 4px aparece apenas como ajuste
+ *     óptico — descer um rótulo 2px, o filete de 1px entre estrelas — nunca
+ *     para separar dois blocos.
+ *  3. Raios: --rad-xs dentro de um controle, --rad-ctl no controle, --rad-box
+ *     na caixa. A pílula de 20px saiu — botão, chip e badge são retangulares
+ *     arredondados. Valor cru só onde o raio é geometria da forma (metade da
+ *     altura de uma barra, canto de um ponto de 8px), e sempre comentado.
+ *  4. Um acento só na interface: --gh-acao (o vermelho da marca). Verde, âmbar
+ *     e vermelho de estado aparecem apenas onde a cor CARREGA significado, e
+ *     não entram na série de dados. Série de dados tem paleta própria e fixa,
+ *     --gh-s1..--gh-s7, atribuída por ENTIDADE e nunca por posição.
+ *  5. Uppercase só em OVERLINE — rótulo curto que nomeia um valor (indicador,
+ *     grupo da sidebar, total de painel, dia da semana no calendário). Saiu de
+ *     onde o texto é para ler: cabeçalho de tabela, label de formulário e
+ *     seção de modal.
+ *  6. Dimensão de glifo-ícone (estrela, aviso) é tamanho de ícone, não
+ *     tipografia: usa --icone-*.
+ * ═══════════════════════════════════════════════════════════════════════ */
+
+.dash-hotel {
+  /* Tipografia — seis degraus */
+  --fs-1: 11px;   /* overline, metadado, nota */
+  --fs-2: 12px;   /* secundário, cabeçalho de tabela, badge */
+  --fs-3: 14px;   /* corpo, célula, campo */
+  --fs-4: 16px;   /* título de painel, título de card */
+  --fs-5: 22px;   /* indicador */
+  --fs-6: 30px;   /* número herói */
+
+  /* Fora da escala de leitura, por motivo declarado: */
+  --fs-micro: 10px;  /* chip de dia do calendário e badge do relatório — cabem
+                        três por célula de 92px, 11px estoura */
+  --fs-nav:   13px;  /* item da sidebar — a coluna tem 220px e precisa comportar
+                        "Equipamentos" com ícone sem truncar */
+
+  /* Tamanho de glifo-ícone, não de texto */
+  --icone-lg: 20px;
+  --icone-xl: 24px;
+
+  /* Espaço — múltiplos de 4 */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px;
+  --sp-4: 16px; --sp-5: 24px; --sp-6: 32px;
+
+  /* Raio */
+  --rad-xs:  4px;   /* item dentro de um controle (mês no segmented, chip de dia) */
+  --rad-ctl: 6px;   /* botão, campo, badge, painel de menu */
+  --rad-box: 10px;  /* cartão, painel, modal */
+
+  /* Acento único: o vermelho da marca (o antigo #C0392B era outro vermelho) */
+  --gh-acao:       var(--red);
+  --gh-acao-hover: #a80d26;
+
+  /* --muted (#8a94a8) sobre --card branco dá ~3:1 e reprova o AA para texto
+     pequeno; este tom passa em 4.6:1 e é o usado em rótulo, nota e metadado. */
+  --gh-muted: #64748b;
+
+  /*
+   * Série de dados — paleta CATEGÓRICA, na ordem fixa azul, laranja, água,
+   * amarelo, magenta, verde.
+   *
+   * Cada parcela é uma entidade (hotel, A/V, videomaker...), não um degrau de
+   * intensidade: seis passos de um mesmo azul deixavam a pilha ilegível quando
+   * três parcelas tinham tamanho parecido.
+   *
+   * A cor segue a PARCELA, nunca a posição na pilha. Um filtro que zere uma
+   * delas não pode repintar as outras — por isso slot fixo, atribuído em
+   * bootGraficos() e em $parcelas da view com a mesma tabela.
+   *
+   * Os hexes vêm da paleta de referência do método de dataviz, validada para
+   * pares adjacentes (o caso de barra empilhada): pior par CVD ΔE 9,1 no claro
+   * e 8,4 no escuro; visão normal 19,6 e 19,3. Os passos do escuro foram
+   * escolhidos para a superfície escura — não é o claro com filtro. O s7
+   * (custos extras) é o violeta da mesma paleta, o slot seguinte; revalidado
+   * com os sete, o pior par não mudou.
+   */
+  --gh-s1: #2a78d6;  /* Hotel         */
+  --gh-s2: #eb6834;  /* A/V           */
+  --gh-s3: #1baf7a;  /* Videomaker    */
+  --gh-s4: #eda100;  /* Transporte    */
+  --gh-s5: #e87ba4;  /* Frete         */
+  --gh-s6: #008300;  /* Materiais     */
+  --gh-s7: #6250d6;  /* Custos extras */
+}
+html.dark .dash-hotel {
+  --gh-muted: #98a3b8;
+  --gh-acao-hover: #d92742;
+  --gh-s1: #3987e5; --gh-s2: #d95926; --gh-s3: #199e70;
+  --gh-s4: #c98500; --gh-s5: #d55181; --gh-s6: #008300;
+  --gh-s7: #9085e9;
+}
+
+/* ── Acessibilidade base ─────────────────────────────────────────────── */
+
+.dash-hotel .sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.dash-hotel :focus-visible {
+  outline: 2px solid var(--consulta);
+  outline-offset: 2px;
+  border-radius: var(--rad-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-hotel *, .dash-hotel *::before, .dash-hotel *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+  }
+}
+
+.dash-hotel .i { width: 1em; height: 1em; fill: none; stroke: currentColor;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  vertical-align: -0.125em; flex: none; }
+.dash-hotel .i-mini { font-size: var(--fs-1); color: var(--gold); }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────
+ * Sobrescreve o item genérico do bi-theme. A versão anterior dava a cada
+ * uma das dez abas um ponto de cor próprio e um subtítulo: dez matizes sem
+ * significado competindo entre si. Aqui o estado ativo é barra + peso, e a
+ * orientação fica nos três rótulos de grupo.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .nav-item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  height: 34px; padding: 0 var(--sp-2);
+  border-left: 3px solid transparent; border-radius: var(--rad-ctl);
+  color: var(--sb-text-mid); font: 400 var(--fs-nav)/1 var(--font-ui);
+  text-decoration: none; transition: background .15s, color .15s;
+}
+.dash-hotel .nav-item:hover { background: rgba(255,255,255,.06); color: var(--sb-text-bright); }
+.dash-hotel .nav-item.active {
+  background: rgba(255,255,255,.07); color: var(--sb-text-bright); font-weight: 600;
+  border-left-color: var(--red); border-radius: 0 var(--rad-ctl) var(--rad-ctl) 0;
+}
+.dash-hotel .nav-item-icon { display: grid; place-items: center; width: 16px; height: 16px; flex: none; }
+.dash-hotel .nav-item-icon svg { width: 15px; height: 15px; fill: none;
+  stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.dash-hotel .nav-section-label {
+  font: 600 var(--fs-1)/1 var(--font-ui); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--sb-text-dim); padding: var(--sp-3) var(--sp-2) var(--sp-2);
+}
+
+/* ── Botões ──────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  height: 32px; padding: 0 var(--sp-3);
+  border: 1px solid var(--border); border-radius: var(--rad-ctl);
+  background: var(--card); color: var(--text);
+  font: 500 var(--fs-2)/1 var(--font-ui); cursor: pointer;
+  text-decoration: none; white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.dash-hotel .gh-btn:hover:not(:disabled) { background: var(--card2); border-color: var(--gh-muted); }
+.dash-hotel .gh-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.dash-hotel .gh-btn-acao { background: var(--gh-acao); border-color: var(--gh-acao); color: #fff; }
+.dash-hotel .gh-btn-acao:hover:not(:disabled) {
+  background: var(--gh-acao-hover); border-color: var(--gh-acao-hover); color: #fff;
+}
+
+/* Era 22px de altura — abaixo de qualquer mínimo razoável de alvo. */
+.dash-hotel .gh-btn-mini { height: 28px; padding: 0 var(--sp-3); font-size: var(--fs-1); }
+
+@media (pointer: coarse) {
+  .dash-hotel .gh-btn      { height: 44px; padding: 0 var(--sp-4); }
+  .dash-hotel .gh-btn-mini { height: 44px; }
+}
+
+/* ── Faixa de indicadores ────────────────────────────────────────────
+ * Eram quatro caixas com borda e sombra cada. Viraram uma faixa dividida
+ * por réguas: mesma informação, um quarto das molduras.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--rad-box); box-shadow: var(--sh-sm);
+  margin-bottom: var(--sp-3); overflow: hidden;
+}
+.dash-hotel .gh-stat { padding: var(--sp-3) var(--sp-4); border-left: 1px solid var(--border); }
+.dash-hotel .gh-stat:first-child { border-left: 0; }
+.dash-hotel .gh-stat-rotulo {
+  font: 600 var(--fs-1)/1.3 var(--font-ui); letter-spacing: .07em;
+  text-transform: uppercase; color: var(--gh-muted); margin-bottom: var(--sp-1);
+}
+.dash-hotel .gh-stat-valor {
+  font: 600 var(--fs-5)/1.1 var(--font-ui); color: var(--text);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.dash-hotel .gh-stat-valor.azul  { color: var(--consulta); }
+.dash-hotel .gh-stat-valor.verde { color: var(--green); }
+.dash-hotel .gh-stat-valor.ambar { color: var(--amber); }
+.dash-hotel .gh-stat-nota { font: 400 var(--fs-1)/1.4 var(--font-ui); color: var(--gh-muted); margin-top: 2px; }
+
+@media (max-width: 700px) {
+  .dash-hotel .gh-stat { border-left: 0; border-top: 1px solid var(--border); }
+  .dash-hotel .gh-stat:first-child { border-top: 0; }
+}
+
+/* Símbolo da moeda em corpo menor: é rótulo, não dígito. Sem isto o "R$"
+   do número herói caía sozinho numa linha acima do valor. */
+.dash-hotel .gh-moeda { font-size: .6em; font-weight: 500; color: var(--gh-muted); margin-right: 3px; }
+
+/* ── Filtro de ano e mês ─────────────────────────────────────────────
+ * Substitui a barra de semestres. Ano é escolha única, mês é múltipla —
+ * "jan a mar" deixa de precisar virar "1º semestre". Continua viajando na
+ * querystring (?ano=&meses=), então voltar e compartilhar link seguem
+ * funcionando, que era a razão do desenho por links.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-filtro-acoes { display: flex; align-items: center; gap: var(--sp-2); margin-left: auto; }
+.dash-hotel .gh-filtro-resumo { font: 400 var(--fs-1)/1 var(--font-ui); color: var(--gh-muted); }
+
+/* Segmented control: um trilho, itens dentro. Antes eram pílulas soltas —
+   nove numa linha, sem indicar que pertenciam ao mesmo grupo. */
+.dash-hotel .gh-seg {
+  display: inline-flex; align-items: center; gap: 2px; padding: 2px;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: var(--rad-ctl); flex-wrap: wrap;
+}
+.dash-hotel .gh-periodo {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  height: 28px; padding: 0 var(--sp-3); border-radius: var(--rad-xs);
+  border: 1px solid transparent; background: none; color: var(--gh-muted);
+  font: 500 var(--fs-2)/1 var(--font-ui); text-decoration: none; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.dash-hotel .gh-periodo:hover:not(:disabled) { color: var(--text); }
+.dash-hotel .gh-periodo.ativo {
+  background: var(--card); border-color: var(--border); color: var(--text);
+  font-weight: 600; box-shadow: var(--sh-sm);
+}
+.dash-hotel .gh-periodo.vazio { opacity: .5; }
+.dash-hotel .gh-periodo:disabled { opacity: .4; cursor: not-allowed; }
+/* Doze meses num trilho só: alvo uniforme, sem virar doze pílulas. */
+
+@media (pointer: coarse) { .dash-hotel .gh-periodo { height: 40px; } }
+
+/* ── Filtros de tela ─────────────────────────────────────────────────── */
+
+.dash-hotel .gh-filtros {
+  display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-3);
+}
+
+/* ── Badges ──────────────────────────────────────────────────────────
+ * Só para exceção e para o estado principal. O estado normal ("Sem OC",
+ * "A/V do hotel") virou metadado: cinco badges por card faziam o olho
+ * varrer cinco cores para descobrir que nada estava errado.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-badge {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  padding: 2px var(--sp-2); border-radius: var(--rad-ctl);
+  font: 600 var(--fs-1)/1.6 var(--font-ui); white-space: nowrap;
+  border: 1px solid transparent;
+}
+.dash-hotel .gh-badge.ok     { background: var(--green-glow);    color: var(--green);    border-color: var(--green-glow); }
+.dash-hotel .gh-badge.info   { background: var(--consulta-glow); color: var(--consulta); border-color: var(--consulta-glow); }
+.dash-hotel .gh-badge.warn   { background: var(--amber-glow);    color: var(--amber);    border-color: var(--amber-glow); }
+.dash-hotel .gh-badge.danger { background: var(--danger-glow);   color: var(--danger);   border-color: var(--danger-glow); }
+.dash-hotel .gh-badge.neutro { background: var(--card2);         color: var(--gh-muted); border-color: var(--border); }
+
+/* ── Painel ──────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-painel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--rad-box); box-shadow: var(--sh-sm); overflow: hidden;
+}
+.dash-hotel .gh-painel-cab {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-3); flex-wrap: wrap;
+  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border);
+}
+.dash-hotel .gh-painel-titulo { font: 600 var(--fs-4)/1.3 var(--font-ui); color: var(--text); }
+.dash-hotel .gh-painel-sub { font: 400 var(--fs-2)/1.4 var(--font-ui); color: var(--gh-muted); margin-top: 1px; }
+.dash-hotel .gh-painel-corpo { padding: var(--sp-4); }
+
+.dash-hotel .gh-painel-total { text-align: right; }
+.dash-hotel .gh-painel-total-rotulo {
+  display: block; font: 600 var(--fs-1)/1.2 var(--font-ui); letter-spacing: .07em;
+  text-transform: uppercase; color: var(--gh-muted);
+}
+.dash-hotel .gh-painel-total strong {
+  font: 600 var(--fs-4)/1.3 var(--font-ui); color: var(--text);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+/* Campo de busca logo abaixo do cabecalho do painel, colado na tabela. */
+/* Grupo de botoes no fim de uma barra de filtros. */
+
+.dash-hotel .gh-vazio {
+  padding: var(--sp-6) var(--sp-4); text-align: center;
+  font: 400 var(--fs-3)/1.5 var(--font-ui); color: var(--gh-muted);
+}
+
+.dash-hotel .gh-grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); margin-bottom: var(--sp-3);
+}
+@media (max-width: 980px) { .dash-hotel .gh-grid-2 { grid-template-columns: 1fr; } }
+.dash-hotel .gh-painel + .gh-painel { margin-top: var(--sp-3); }
+
+/* ── Conteúdo dentro do .main ────────────────────────────────────────
+ * .main (bi-theme.css) é flex column com gap: as margens de baixo que cada
+ * bloco trazia somariam ao gap e dobrariam o respiro entre eles.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .main > .gh-stats,
+.dash-hotel .main > .gh-alerta,
+.dash-hotel .main > .gh-semdados,
+.dash-hotel .main > .gh-grid-2 { margin-bottom: 0; }
+.dash-hotel .main > .gh-painel + .gh-painel { margin-top: 0; }
+
+/* ── Avisos (toasts) ─────────────────────────────────────────────────── */
+
+.dash-hotel .gh-toasts {
+  position: fixed; right: var(--sp-4); bottom: var(--sp-4); z-index: 900;
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  max-width: min(380px, calc(100vw - 32px));
+}
+.dash-hotel .gh-toast {
+  display: flex; align-items: flex-start; gap: var(--sp-2);
+  padding: var(--sp-3); border-radius: var(--rad-ctl);
+  background: var(--card); border: 1px solid var(--border);
+  box-shadow: var(--sh-lg); font: 400 var(--fs-3)/1.45 var(--font-ui); color: var(--text);
+  border-left: 3px solid var(--consulta);
+  animation: gh-toast-entra .18s ease-out;
+}
+.dash-hotel .gh-toast.ok    { border-left-color: var(--green); }
+.dash-hotel .gh-toast.erro  { border-left-color: var(--danger); }
+.dash-hotel .gh-toast.aviso { border-left-color: var(--amber); }
+.dash-hotel .gh-toast-fechar {
+  margin-left: auto; width: 28px; height: 28px; flex: none;
+  display: grid; place-items: center;
+  background: none; border: 0; border-radius: var(--rad-xs); cursor: pointer;
+  color: var(--gh-muted); font-size: var(--fs-4); line-height: 1;
+}
+.dash-hotel .gh-toast-fechar:hover { background: var(--card2); color: var(--text); }
+@keyframes gh-toast-entra { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ── Aviso de eventos próximos ───────────────────────────────────────
+ * Era um banner âmbar de borda cheia — o elemento mais gritante da tela
+ * depois do header. Virou card neutro com faixa: continua achável, sem
+ * disputar atenção com o conteúdo.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-alerta {
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--rad-box); box-shadow: var(--sh-sm);
+  padding: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-3);
+  display: flex; flex-direction: column; gap: var(--sp-3);
+}
+.dash-hotel .gh-alerta-titulo {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font: 600 var(--fs-2)/1.3 var(--font-ui); color: var(--text); margin-bottom: var(--sp-2);
+}
+.dash-hotel .gh-alerta-titulo .i { color: var(--amber); font-size: var(--fs-3); }
+.dash-hotel .gh-alerta-lista { list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: var(--sp-2); }
+.dash-hotel .gh-alerta-lista li {
+  display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
+  font: 400 var(--fs-3)/1.4 var(--font-ui); color: var(--text);
+}
+.dash-hotel .gh-alerta-quando {
+  font: 600 var(--fs-1)/1 var(--font-ui); padding: 3px var(--sp-2); border-radius: var(--rad-xs);
+  background: var(--card2); color: var(--gh-muted); border: 1px solid var(--border);
+}
+.dash-hotel .gh-alerta-quando.urgente { background: var(--danger); border-color: var(--danger); color: #fff; }
+.dash-hotel .gh-alerta-pend { font: 500 var(--fs-2)/1 var(--font-ui); color: var(--danger); }
+.dash-hotel .gh-alerta-ok   { font: 500 var(--fs-2)/1 var(--font-ui); color: var(--green); }
+.dash-hotel .gh-alerta-link {
+  background: none; border: 0; padding: var(--sp-1) 0; cursor: pointer;
+  font: 500 var(--fs-2)/1 var(--font-ui); color: var(--consulta); text-decoration: underline;
+}
+.dash-hotel .gh-alerta-breve { border-top: 1px solid var(--border); padding-top: var(--sp-3); }
+.dash-hotel .gh-alerta-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+.dash-hotel .gh-chip {
+  font: 400 var(--fs-1)/1 var(--font-ui); padding: 5px var(--sp-2); border-radius: var(--rad-xs);
+  background: var(--card2); border: 1px solid var(--border); color: var(--gh-muted);
+}
+.dash-hotel .gh-chip-acao {
+  cursor: pointer; display: inline-flex; align-items: center; gap: var(--sp-1); min-height: 28px;
+}
+.dash-hotel .gh-chip-acao:hover { border-color: var(--consulta); color: var(--consulta); }
+
+/* ── Aviso de ambiente sem dados ─────────────────────────────────────── */
+
+.dash-hotel .gh-semdados {
+  display: flex; gap: var(--sp-3); align-items: flex-start;
+  background: var(--card); border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  border-radius: var(--rad-box); box-shadow: var(--sh-sm);
+  padding: var(--sp-4); margin-bottom: var(--sp-3);
+}
+.dash-hotel .gh-semdados-icone { color: var(--amber); font-size: var(--icone-lg); line-height: 1; }
+.dash-hotel .gh-semdados-titulo { font: 600 var(--fs-4)/1.3 var(--font-ui); color: var(--text); margin-bottom: var(--sp-1); }
+.dash-hotel .gh-semdados-texto {
+  font: 400 var(--fs-3)/1.55 var(--font-ui); color: var(--gh-muted);
+  margin: 0 0 var(--sp-1); max-width: 70ch;
+}
+.dash-hotel .gh-semdados code {
+  font-family: var(--font-mono); font-size: var(--fs-2);
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: var(--rad-xs); padding: 2px var(--sp-1);
+}
+
+/* ── Tabela ──────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-tabela-wrap { overflow-x: auto; }
+.dash-hotel .gh-tabela { width: 100%; border-collapse: collapse; font: 400 var(--fs-3)/1.4 var(--font-ui); }
+.dash-hotel .gh-tabela th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--card2); color: var(--gh-muted);
+  font: 600 var(--fs-2)/1.3 var(--font-ui);
+  text-align: left; padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.dash-hotel .gh-tabela td {
+  height: 32px; padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border); color: var(--text);
+}
+.dash-hotel .gh-tabela tr:last-child td { border-bottom: 0; }
+.dash-hotel .gh-tabela .num { text-align: right; font-variant-numeric: tabular-nums; }
+.dash-hotel .gh-tabela tbody tr:hover td { background: var(--card2); }
+
+/* Era var(--border): #dde2ec sobre branco, ~1.3:1 — invisível, não discreto. */
+.dash-hotel .gh-tabela-total td.zero  { color: var(--gh-muted); }
+.dash-hotel .gh-tabela-total td.forte { font-weight: 600; }
+.dash-hotel .gh-tabela-total tfoot th,
+.dash-hotel .gh-tabela-total tfoot td {
+  position: sticky; bottom: 0;
+  background: var(--card2); border-top: 2px solid var(--border); border-bottom: 0;
+  font: 600 var(--fs-2)/1.4 var(--font-ui); padding: var(--sp-2) var(--sp-3);
+}
+.dash-hotel .gh-tabela-total tfoot td { text-align: right; font-variant-numeric: tabular-nums; }
+
+.dash-hotel .gh-ev-cidade { font: 500 var(--fs-3)/1.35 var(--font-ui); color: var(--text); }
+.dash-hotel .gh-ev-uf {
+  font: 600 var(--fs-1)/1 var(--font-ui); color: var(--gh-muted);
+  border: 1px solid var(--border); border-radius: var(--rad-xs); padding: 1px 4px; margin-left: var(--sp-1);
+}
+.dash-hotel .gh-ev-meta { font: 400 var(--fs-1)/1.4 var(--font-ui); color: var(--gh-muted); }
+.dash-hotel .gh-ev-pend { color: var(--amber); font-weight: 500; margin-left: var(--sp-2); }
+
+/* ── Cartões de hotel ────────────────────────────────────────────────── */
+
+.dash-hotel .gh-cards {
+  display: grid; gap: var(--sp-3); padding: var(--sp-4);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+.dash-hotel .gh-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--rad-box); padding: var(--sp-3) var(--sp-4); box-shadow: var(--sh-sm);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+}
+/* Evento já realizado fica discreto, mas legível — o original usava 55% de
+   opacidade, que derruba o contraste abaixo do mínimo acessível. */
+.dash-hotel .gh-card.passado { background: var(--card2); }
+.dash-hotel .gh-card[hidden] { display: none; }
+
+.dash-hotel .gh-card-topo { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-3); }
+.dash-hotel .gh-card-titulo { font: 600 var(--fs-4)/1.3 var(--font-ui); color: var(--text); margin: 0; }
+.dash-hotel .gh-card-sub { font: 400 var(--fs-2)/1.4 var(--font-ui); color: var(--gh-muted); margin-top: 2px; }
+.dash-hotel .gh-card-realizado {
+  font-size: var(--fs-1); text-transform: uppercase; letter-spacing: .06em;
+  color: var(--gh-muted); border: 1px solid var(--border);
+  border-radius: var(--rad-xs); padding: 0 4px; margin-left: var(--sp-1);
+}
+/* Custo não é conquista: número neutro. Verde lê como resultado positivo. */
+.dash-hotel .gh-card-valor {
+  font: 600 var(--fs-4)/1.2 var(--font-ui); color: var(--text);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.dash-hotel .gh-card-badges { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+/* O que antes era badge de estado normal. */
+.dash-hotel .gh-card-meta {
+  display: flex; flex-wrap: wrap; gap: var(--sp-1) var(--sp-2);
+  font: 400 var(--fs-1)/1.5 var(--font-ui); color: var(--gh-muted);
+}
+.dash-hotel .gh-card-meta span { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.dash-hotel .gh-card-meta .sep { color: var(--border); }
+.dash-hotel .gh-card-linha {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font: 400 var(--fs-1)/1.5 var(--font-ui); color: var(--gh-muted);
+}
+.dash-hotel .gh-card-obs {
+  font: 400 var(--fs-2)/1.45 var(--font-ui); color: var(--gh-muted);
+  border-left: 2px solid var(--border); padding-left: var(--sp-2);
+}
+.dash-hotel .gh-card-rodape {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-2); margin-top: auto; padding-top: var(--sp-2);
+}
+.dash-hotel .gh-card-rodape-acoes {
+  display: flex; align-items: center; gap: var(--sp-2);
+}
+.dash-hotel .gh-card-pend,
+.dash-hotel .gh-card-ok {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  background: none; border: 0; padding: var(--sp-1) 0; cursor: pointer;
+  font: 500 var(--fs-2)/1 var(--font-ui); text-decoration: underline;
+}
+.dash-hotel .gh-card-pend { color: var(--danger); }
+.dash-hotel .gh-card-ok   { color: var(--green); }
+
+.dash-hotel .gh-card-estrelas { display: flex; gap: 1px; font-size: var(--fs-nav); }
+.dash-hotel .gh-card-estrelas .cheia { color: var(--gold); }
+.dash-hotel .gh-card-estrelas .vazia { color: var(--border); }
+
+/* ── Indicadores ─────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-kpis {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--sp-4) var(--sp-5);
+}
+.dash-hotel .gh-kpi { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dash-hotel .gh-kpi-rotulo {
+  font: 600 var(--fs-1)/1.3 var(--font-ui); letter-spacing: .07em;
+  text-transform: uppercase; color: var(--gh-muted); white-space: nowrap;
+}
+.dash-hotel .gh-kpi-valor {
+  font: 600 var(--fs-5)/1.15 var(--font-ui); color: var(--text);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* Encolhe antes de estourar o card: em painel estreito o herói desce até
+   --fs-5 em vez de vazar a borda. */
+.dash-hotel .gh-kpi-valor.heroi {
+  font-size: clamp(var(--fs-5), 2.4vw, var(--fs-6));
+  letter-spacing: -.01em;
+}
+.dash-hotel .gh-kpi-valor.ambar    { color: var(--amber); }
+.dash-hotel .gh-kpi-valor.verde    { color: var(--green); }
+.dash-hotel .gh-kpi-valor.vermelho { color: var(--danger); }
+/* Reserva a linha da nota para os indicadores terminarem na mesma altura. */
+.dash-hotel .gh-kpi-nota {
+  font: 400 var(--fs-1)/1.35 var(--font-ui); color: var(--gh-muted);
+  min-height: 15px; overflow-wrap: anywhere;
+}
+
+/* ── Resumo executivo ────────────────────────────────────────────────
+ * O total geral em cima, sozinho, com régua abaixo; os outros três numa
+ * linha de três colunas.
+ *
+ * Era o herói à esquerda e os três à direita, em duas colunas. Em meio
+ * painel sobravam ~260px para os três, e o "Mais barato" caía para a linha
+ * de baixo — os quatro indicadores desalinhavam justamente na tela em que
+ * eles servem para ser comparados de relance.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-resumo-destaque {
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.dash-hotel .gh-resumo-secundarios {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-3) var(--sp-4);
+}
+@media (max-width: 620px) {
+  .dash-hotel .gh-resumo-secundarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Barras proporcionais ────────────────────────────────────────────
+ * Barra em div: é texto de verdade, imprime certo e não precisa ser
+ * redesenhada ao trocar o tema. Canvas só onde a forma exige.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-barra-linha {
+  display: grid; grid-template-columns: 104px 1fr auto 46px;
+  align-items: center; gap: var(--sp-3); padding: 5px 0;
+  font: 400 var(--fs-2)/1.4 var(--font-ui);
+}
+.dash-hotel .gh-barra-rotulo {
+  color: var(--text); font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* 3px = metade da altura: a barra é totalmente arredondada por geometria,
+   não por escolha de escala. */
+.dash-hotel .gh-barra-track { height: 6px; border-radius: 3px; background: var(--card2); overflow: hidden; }
+.dash-hotel .gh-barra-fill { display: block; height: 100%; border-radius: 3px; }
+.dash-hotel .gh-barra-valor {
+  font-variant-numeric: tabular-nums; color: var(--text);
+  white-space: nowrap; font-size: var(--fs-2);
+}
+.dash-hotel .gh-barra-pct {
+  font-variant-numeric: tabular-nums; color: var(--gh-muted);
+  text-align: right; font-size: var(--fs-1); white-space: nowrap;
+}
+@media (max-width: 620px) {
+  .dash-hotel .gh-barra-linha { grid-template-columns: 86px 1fr auto; }
+  .dash-hotel .gh-barra-pct { display: none; }
+}
+
+/* ── Tempos médios ───────────────────────────────────────────────────── */
+
+.dash-hotel .gh-tempos { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--sp-4); }
+.dash-hotel .gh-tempo { border-left: 2px solid var(--border); padding-left: var(--sp-3); }
+.dash-hotel .gh-tempo-rotulo {
+  font: 600 var(--fs-1)/1.3 var(--font-ui); letter-spacing: .07em;
+  text-transform: uppercase; color: var(--gh-muted); margin-bottom: 2px;
+}
+.dash-hotel .gh-tempo-valor {
+  font: 600 var(--fs-5)/1.1 var(--font-ui); color: var(--text); font-variant-numeric: tabular-nums;
+}
+.dash-hotel .gh-tempo-valor span { font: 400 var(--fs-2)/1 var(--font-ui); color: var(--gh-muted); }
+/* Era var(--border) — mesmo problema de contraste do td.zero. */
+.dash-hotel .gh-tempo-valor.sem { color: var(--gh-muted); }
+.dash-hotel .gh-tempo-nota { font: 400 var(--fs-1)/1.4 var(--font-ui); color: var(--gh-muted); margin-top: 2px; }
+.dash-hotel .gh-tempo-alerta { font: 500 var(--fs-1)/1.3 var(--font-ui); color: var(--amber); margin-top: 3px; }
+
+/* ── Gráficos ────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-canvas-wrap { position: relative; height: 190px; }
+.dash-hotel .gh-canvas-wrap.alto { height: 250px; }
+.dash-hotel .gh-canvas-wrap[hidden] { display: none; }
+
+/* Duas roscas no mesmo painel — hotel e fornecedor de A/V. Empilham antes de
+   espremer: rosca em menos de ~200px vira um anel sem leitura. */
+.dash-hotel .gh-roscas {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4);
+}
+@media (max-width: 1200px) {
+  .dash-hotel .gh-roscas { grid-template-columns: 1fr; }
+}
+.dash-hotel .gh-rosca { min-width: 0; }
+.dash-hotel .gh-rosca-titulo {
+  font: 600 var(--fs-1)/1.3 var(--font-ui); letter-spacing: .07em;
+  text-transform: uppercase; color: var(--gh-muted);
+  text-align: center; margin-bottom: var(--sp-2);
+}
+
+/* ── Tabela equivalente de um gráfico ────────────────────────────────
+ * Aberta pelo botão "Ver tabela". Corpo menor e tudo centralizado, porque
+ * são muitas colunas numéricas em meio painel: com o corpo da tabela normal
+ * o "R$" quebrava para a linha de cima em cada célula.
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-tabela-grafico { font-size: var(--fs-1); }
+.dash-hotel .gh-tabela-grafico th,
+.dash-hotel .gh-tabela-grafico td {
+  text-align: center; padding: var(--sp-1) var(--sp-2);
+  white-space: nowrap; height: auto;
+  font-variant-numeric: tabular-nums;
+}
+.dash-hotel .gh-tabela-grafico th:first-child,
+.dash-hotel .gh-tabela-grafico td:first-child { text-align: left; }
+.dash-hotel .gh-tabela-grafico .gh-th-unidade { font-weight: 400; color: var(--gh-muted); }
+/* Quadradinho de legenda: 2px é o canto de um ponto de 8px, geometria. */
+.dash-hotel .gh-ponto { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+
+/* ── Checklist ───────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-progresso {
+  /* 3px = metade da altura, como .gh-barra-track. */
+  height: 6px; border-radius: 3px; background: var(--card2);
+  overflow: hidden; margin: var(--sp-2) 0 var(--sp-3);
+}
+.dash-hotel .gh-progresso-fill { height: 100%; border-radius: 3px; transition: width .25s; }
+.dash-hotel .gh-check-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.dash-hotel .gh-check {
+  display: flex; align-items: flex-start; gap: var(--sp-2);
+  padding: var(--sp-2) 0; border-bottom: 1px solid var(--border);
+  font: 400 var(--fs-3)/1.4 var(--font-ui);
+}
+.dash-hotel .gh-check:last-child { border-bottom: 0; }
+.dash-hotel .gh-check .i { margin-top: 1px; font-size: var(--fs-4); }
+.dash-hotel .gh-check.ok .i  { color: var(--green); }
+.dash-hotel .gh-check.nao .i { color: var(--danger); }
+.dash-hotel .gh-check-rotulo { font-weight: 500; color: var(--text); }
+.dash-hotel .gh-check-detalhe { font-size: var(--fs-1); color: var(--gh-muted); }
+
+/* ── Modais (<dialog> nativo) ────────────────────────────────────────── */
+
+.dash-hotel .gh-dialog,
+dialog.gh-dialog {
+  padding: 0; border: 1px solid var(--border); border-radius: var(--rad-box);
+  background: var(--card); color: var(--text);
+  box-shadow: var(--sh-lg); max-width: min(700px, calc(100vw - 32px));
+  width: 100%; font-family: var(--font-ui);
+}
+dialog.gh-dialog::backdrop { background: rgba(15, 23, 42, .55); }
+
+dialog.gh-confirm { max-width: 400px; }
+.gh-confirm-corpo { padding: var(--sp-4); }
+.gh-confirm-msg { font-size: var(--fs-3); line-height: 1.5; margin: 0 0 var(--sp-4); color: var(--text); }
+.gh-confirm-acoes { display: flex; justify-content: flex-end; gap: var(--sp-2); }
+
+.gh-dialog-cab {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border);
+}
+.gh-dialog-titulo { font: 600 var(--fs-4)/1.3 var(--font-ui); color: var(--text); }
+.gh-dialog-corpo { padding: var(--sp-4); max-height: min(70vh, 620px); overflow-y: auto; }
+.gh-dialog-rodape {
+  display: flex; align-items: center; gap: var(--sp-2); justify-content: flex-end;
+  padding: var(--sp-3) var(--sp-4); border-top: 1px solid var(--border); background: var(--card2);
+}
+.gh-dialog-rodape .gh-btn-excluir { margin-right: auto; color: var(--danger); border-color: var(--danger-glow); }
+.gh-dialog-rodape .gh-btn-excluir:hover:not(:disabled) {
+  background: var(--danger-glow); border-color: var(--danger); color: var(--danger);
+}
+.dash-hotel .gh-dialog-largo { max-width: min(760px, calc(100vw - 32px)); }
+
+/* Seção de modal: era uppercase 10px com .09em de tracking — rótulo de
+   formulário não precisa gritar. */
+.dash-hotel .gh-secao {
+  font: 600 var(--fs-2)/1.3 var(--font-ui); color: var(--text);
+  margin: var(--sp-5) 0 var(--sp-3);
+  padding-bottom: var(--sp-1); border-bottom: 1px solid var(--border);
+}
+.dash-hotel .gh-dialog-corpo > .gh-secao:first-child { margin-top: 0; }
+
+/* ── Formulários ─────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-campo { display: flex; flex-direction: column; gap: var(--sp-1); margin-bottom: var(--sp-3); }
+.dash-hotel .gh-campo > label { font: 500 var(--fs-2)/1.3 var(--font-ui); color: var(--gh-muted); }
+.dash-hotel .gh-campo input,
+.dash-hotel .gh-campo select,
+.dash-hotel .gh-campo textarea {
+  width: 100%; height: 36px; padding: 0 var(--sp-3);
+  border: 1px solid var(--border); border-radius: var(--rad-ctl);
+  background: var(--card); color: var(--text);
+  font: 400 var(--fs-3)/1.4 var(--font-ui);
+}
+.dash-hotel .gh-campo textarea {
+  height: auto; min-height: 64px; padding: var(--sp-2) var(--sp-3); resize: vertical;
+}
+.dash-hotel .gh-campo input:focus,
+.dash-hotel .gh-campo select:focus,
+.dash-hotel .gh-campo textarea:focus { border-color: var(--consulta); }
+.dash-hotel .gh-campo input[readonly] { background: var(--card2); color: var(--gh-muted); }
+.dash-hotel .gh-campo-dica { font: 400 var(--fs-1)/1.35 var(--font-ui); color: var(--gh-muted); }
+.dash-hotel .gh-campo-linha { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--sp-3); }
+@media (max-width: 620px) { .dash-hotel .gh-campo-linha { grid-template-columns: 1fr; } }
+
+/* Erro de campo: cor + borda + texto. A cor sozinha não comunica. */
+.dash-hotel .gh-campo .is-invalid { border-color: var(--danger); background: var(--danger-glow); }
+.dash-hotel .gh-erro-campo { font: 500 var(--fs-1)/1.35 var(--font-ui); color: var(--danger); }
+.dash-hotel .gh-erro-geral {
+  margin: 0 var(--sp-4); padding: var(--sp-2) var(--sp-3); border-radius: var(--rad-ctl);
+  background: var(--danger-glow); border: 1px solid var(--danger);
+  color: var(--danger); font: 500 var(--fs-2)/1.45 var(--font-ui);
+}
+
+.dash-hotel .gh-campo-check {
+  flex-direction: row; align-items: center; gap: var(--sp-2);
+  min-height: 36px; margin-top: var(--sp-5);
+}
+.dash-hotel .gh-campo-check input { width: 16px; height: 16px; padding: 0; }
+.dash-hotel .gh-campo-check label {
+  font: 400 var(--fs-3)/1.3 var(--font-ui); text-transform: none;
+  letter-spacing: 0; color: var(--text); cursor: pointer;
+}
+
+/* ── Avaliação por estrelas ──────────────────────────────────────────
+ * As estrelas ficam em ordem DECRESCENTE no DOM e são reexibidas com
+ * row-reverse. É o que permite dourar a estrela escolhida e todas as
+ * anteriores usando só CSS: "~" alcança apenas irmãos POSTERIORES, então a
+ * ordem invertida transforma "anteriores na tela" em "posteriores no DOM".
+ * ──────────────────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-estrelas { border: 0; padding: 0; margin-bottom: var(--sp-3); }
+.dash-hotel .gh-estrelas legend { font: 500 var(--fs-2)/1.3 var(--font-ui); color: var(--gh-muted); padding: 0; }
+.dash-hotel .gh-estrelas-linha { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-1); }
+.dash-hotel .gh-estrelas-grupo { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
+/* Era 19px de alvo — pequeno demais para o dedo e para o mouse. */
+.dash-hotel .gh-estrelas-grupo label {
+  color: var(--border); font-size: var(--icone-lg); line-height: 1; cursor: pointer;
+  width: 28px; height: 28px; display: grid; place-items: center;
+  border-radius: var(--rad-xs); transition: color .15s;
+}
+.dash-hotel .gh-estrelas-grupo input:checked + label,
+.dash-hotel .gh-estrelas-grupo input:checked ~ label { color: var(--gold); }
+.dash-hotel .gh-estrelas-grupo label:hover,
+.dash-hotel .gh-estrelas-grupo label:hover ~ label { color: var(--gold); }
+.dash-hotel .gh-estrelas-grupo input:focus-visible + label { outline: 2px solid var(--consulta); outline-offset: 2px; }
+.dash-hotel .gh-estrela-zero {
+  font: 400 var(--fs-2)/1 var(--font-ui) !important; color: var(--gh-muted);
+  text-decoration: underline; background: none; border: 0; cursor: pointer;
+  padding: var(--sp-2) 0;
+}
+@media (pointer: coarse) {
+  .dash-hotel .gh-estrelas-grupo label { width: 44px; height: 44px; font-size: var(--icone-xl); }
+}
+
+/* ── Calendário ──────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-cal-nav { align-items: center; }
+.dash-hotel .gh-cal-titulo {
+  font: 600 var(--fs-4)/1 var(--font-ui); color: var(--text);
+  min-width: 150px; text-align: center;
+}
+.dash-hotel .gh-cal-legenda {
+  display: flex; gap: var(--sp-3); margin-left: auto; flex-wrap: wrap;
+  font: 400 var(--fs-1)/1 var(--font-ui); color: var(--gh-muted);
+}
+.dash-hotel .gh-cal-legenda span { display: inline-flex; align-items: center; gap: var(--sp-1); }
+.dash-hotel .gh-ponto.evento  { background: var(--consulta); }
+.dash-hotel .gh-ponto.feriado { background: var(--danger); }
+.dash-hotel .gh-ponto.nota    { background: var(--amber); }
+
+.dash-hotel .gh-cal-layout { display: grid; grid-template-columns: 1fr 300px; gap: var(--sp-3); align-items: start; }
+@media (max-width: 980px) { .dash-hotel .gh-cal-layout { grid-template-columns: 1fr; } }
+
+.dash-hotel .gh-cal { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.dash-hotel .gh-cal th {
+  padding: var(--sp-2); text-align: center; background: var(--card2);
+  font: 600 var(--fs-1)/1 var(--font-ui); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--gh-muted); border-bottom: 1px solid var(--border);
+}
+.dash-hotel .gh-cal th abbr { text-decoration: none; }
+.dash-hotel .gh-cal td {
+  vertical-align: top; height: 92px; padding: var(--sp-1);
+  border: 1px solid var(--border); background: var(--card);
+}
+.dash-hotel .gh-cal-fora { background: var(--card2) !important; }
+.dash-hotel .gh-cal-dia.fds { background: var(--card2); }
+.dash-hotel .gh-cal-dia.hoje { box-shadow: inset 0 0 0 2px var(--consulta); }
+.dash-hotel .gh-cal-dia.feriado .gh-cal-num { color: var(--danger); font-weight: 700; }
+
+.dash-hotel .gh-cal-btn {
+  display: block; width: 100%; min-height: 28px; text-align: left;
+  background: none; border: 0; padding: 2px var(--sp-1); border-radius: var(--rad-xs); cursor: pointer;
+}
+.dash-hotel .gh-cal-btn:hover { background: var(--card2); }
+.dash-hotel .gh-cal-num { font: 600 var(--fs-2)/1 var(--font-ui); color: var(--text); }
+
+.dash-hotel .gh-cal-chip {
+  display: block; margin: 2px 1px 0; padding: 1px var(--sp-1); border-radius: var(--rad-xs);
+  font: 500 var(--fs-micro)/1.5 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.dash-hotel .gh-cal-chip.evento  { background: var(--consulta-glow); color: var(--consulta); }
+.dash-hotel .gh-cal-chip.feriado { background: var(--danger-glow);   color: var(--danger); }
+.dash-hotel .gh-cal-chip.nota    { background: var(--amber-glow);    color: var(--amber); }
+.dash-hotel .gh-cal-mais { display: block; font: 400 var(--fs-micro)/1.4 var(--font-ui);
+  color: var(--gh-muted); padding-left: var(--sp-1); }
+
+.dash-hotel .gh-agenda-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-3); }
+.dash-hotel .gh-agenda-data {
+  font: 600 var(--fs-1)/1.3 var(--font-ui); color: var(--gh-muted);
+  border-bottom: 1px solid var(--border); padding-bottom: 2px; margin-bottom: var(--sp-1);
+}
+.dash-hotel .gh-agenda-item {
+  font: 400 var(--fs-2)/1.45 var(--font-ui); padding-left: var(--sp-2);
+  border-left: 2px solid transparent;
+}
+.dash-hotel .gh-agenda-item.evento  { border-left-color: var(--consulta); color: var(--text); }
+.dash-hotel .gh-agenda-item.feriado { border-left-color: var(--danger);   color: var(--danger); }
+.dash-hotel .gh-agenda-item.nota    { border-left-color: var(--amber);    color: var(--text); }
+
+.dash-hotel .gh-dia-item {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) 0; border-bottom: 1px solid var(--border);
+  font: 400 var(--fs-3)/1.4 var(--font-ui);
+}
+.dash-hotel .gh-dia-item.feriado span:first-child { color: var(--danger); }
+.dash-hotel .gh-dia-item.nota span:first-child    { color: var(--amber); }
+
+/* Popover de hover do chip de evento: checklist + custo, sem precisar
+   abrir o modal. z-index acima de .gh-toasts (900) para não sumir atrás
+   de um aviso que apareça enquanto o popover está aberto. */
+.dash-hotel .gh-cal-chip.evento { cursor: default; }
+.dash-hotel .gh-cal-chip.evento:focus-visible {
+  outline: 2px solid var(--consulta); outline-offset: 1px;
+}
+
+.dash-hotel .gh-cal-popover {
+  position: fixed;
+  z-index: 950;
+  width: 280px;
+  padding: var(--sp-3);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--rad-box);
+  box-shadow: var(--sh-lg);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .12s;
+}
+.dash-hotel .gh-cal-popover.aberto { opacity: 1; visibility: visible; }
+
+.dash-hotel .gh-cal-pop-titulo { font: 600 var(--fs-3)/1.3 var(--font-ui); color: var(--text); }
+.dash-hotel .gh-cal-pop-data   { font: 400 var(--fs-1)/1.4 var(--font-ui); color: var(--gh-muted); margin-top: 1px; }
+
+.dash-hotel .gh-cal-pop-sec {
+  margin-top: var(--sp-3); padding-top: var(--sp-3); border-top: 1px solid var(--border);
+}
+.dash-hotel .gh-cal-pop-overline {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--sp-2);
+  font: 600 var(--fs-1)/1.3 var(--font-ui); letter-spacing: .06em; text-transform: uppercase;
+  color: var(--gh-muted); margin-bottom: var(--sp-2);
+}
+.dash-hotel .gh-cal-pop-resumo { font: 600 var(--fs-2)/1 var(--font-ui); text-transform: none; letter-spacing: 0; white-space: nowrap; }
+
+.dash-hotel .gh-cal-pop-barra { margin: 0 0 var(--sp-2); }
+
+.dash-hotel .gh-cal-pop-check {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px var(--sp-2);
+}
+.dash-hotel .gh-cal-pop-check li {
+  display: flex; align-items: center; gap: 5px;
+  font: 400 var(--fs-1)/1.3 var(--font-ui); color: var(--text);
+}
+.dash-hotel .gh-cal-pop-check li svg {
+  width: 12px; height: 12px; flex-shrink: 0;
+  fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+}
+.dash-hotel .gh-cal-pop-check li.ok svg  { color: var(--green); }
+.dash-hotel .gh-cal-pop-check li.nao svg { color: var(--danger); }
+.dash-hotel .gh-cal-pop-check li.nao span { color: var(--gh-muted); }
+
+.dash-hotel .gh-cal-pop-custo { display: flex; flex-direction: column; gap: 3px; }
+.dash-hotel .gh-cal-pop-custo-linha {
+  display: flex; justify-content: space-between; gap: var(--sp-2);
+  font: 400 var(--fs-2)/1.5 var(--font-ui); color: var(--text);
+}
+.dash-hotel .gh-cal-pop-custo-linha span:last-child { color: var(--gh-muted); font-variant-numeric: tabular-nums; }
+.dash-hotel .gh-cal-pop-custo-linha.total {
+  border-top: 1px solid var(--border); margin-top: 2px; padding-top: 4px;
+  font-weight: 600; color: var(--text);
+}
+.dash-hotel .gh-cal-pop-custo-linha.total span:last-child { color: var(--text); font-weight: 600; }
+
+/* ── Relatório ───────────────────────────────────────────────────────── */
+
+.dash-hotel .gh-tabela-rel { font-size: var(--fs-2); }
+.dash-hotel .gh-tabela-rel th,
+.dash-hotel .gh-tabela-rel td { padding: var(--sp-1) var(--sp-2); }
+.dash-hotel .gh-tabela-rel td { height: 28px; }
+.dash-hotel .gh-tabela-rel .gh-badge { font-size: var(--fs-micro); padding: 1px var(--sp-1); }
+.dash-hotel .gh-tabela-rel tfoot th,
+.dash-hotel .gh-tabela-rel tfoot td {
+  background: var(--card2); border-top: 2px solid var(--border);
+  font: 600 var(--fs-2)/1.4 var(--font-ui); position: sticky; bottom: 0;
+}
+.dash-hotel .gh-tabela-rel tfoot td.forte { text-align: right; font-weight: 700; }
+
+.dash-hotel .gh-print-cab { display: none; }
+
+/* ── Impressão ───────────────────────────────────────────────────────── */
+
+@media print {
+  /* Sem isto o navegador descarta as cores de fundo, e a tabela sai sem a
+     faixa de cabeçalho e sem os badges — foi o que aconteceu no relatório do
+     dashboard de eventos. */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  @page { size: A4 landscape; margin: 10mm; }
+
+  /* O tema escuro imprimiria fundo preto e gastaria tinta à toa. */
+  html.dark { filter: none; }
+  html.dark .dash-hotel {
+    --bg: #fff; --card: #fff; --card2: #f4f6fa;
+    --text: #111; --border: #ccc; --gh-muted: #555;
+  }
+
+  /* O cabecalho e o painel de filtros sao chrome de tela: na folha, o
+     contexto vem do .gh-print-cab logo abaixo. O .gh-nav (marca, abas e
+     faixa de titulo) e o cabecalho atual do modulo; ficou de fora desta
+     lista quando substituiu a sidebar e saia impresso no topo da folha. */
+  .dash-hotel .sidebar,
+  .dash-hotel .header,
+  .dash-hotel .gh-nav,
+  .dash-hotel .filters,
+  .dash-hotel .gh-stats,
+  .dash-hotel .gh-alerta,
+  .dash-hotel .gh-toasts,
+  .dash-hotel .gh-tabela-barra,
+  .dash-hotel .gh-nao-imprime { display: none !important; }
+
+  /* O bi-theme.css prende o shell na altura da tela (.app-shell 100vh +
+     overflow hidden) e rola o .content por dentro. No papel isso vira uma
+     janela: saía só a primeira folha, com as colunas da direita cortadas. */
+  .dash-hotel .app-shell { display: block; height: auto; overflow: visible; }
+  .dash-hotel .main { padding: 0; max-width: none; display: block; }
+  .dash-hotel .content { padding: 0; margin: 0; overflow: visible; }
+
+  .dash-hotel .gh-print-cab {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: var(--sp-3); margin-bottom: var(--sp-2); padding-bottom: 5px;
+    border-bottom: 2px solid #333; font-size: var(--fs-1); color: #111;
+  }
+
+  .dash-hotel .gh-painel { border: 0; box-shadow: none; border-radius: 0; overflow: visible; }
+  .dash-hotel .gh-tabela-wrap { overflow: visible; }
+  .dash-hotel .gh-tabela-rel { font-size: 8pt; }
+  /* "R$" numa linha e o número na outra lia como dois valores. */
+  .dash-hotel .gh-tabela-rel td.num { white-space: nowrap; }
+  .dash-hotel .gh-tabela-rel th, .dash-hotel .gh-tabela-rel td { padding: 2px 3px; }
+  .dash-hotel .gh-tabela-rel thead { display: table-header-group; }  /* repete o cabeçalho a cada folha */
+  .dash-hotel .gh-tabela-rel tr { break-inside: avoid; }
+  /* tfoot explícito: a regra de tela (.gh-tabela-rel tfoot th, sticky no
+     rodapé) é mais específica e prendia o "Total" no pé da primeira folha. */
+  .dash-hotel .gh-tabela-rel th,
+  .dash-hotel .gh-tabela-rel tfoot th,
+  .dash-hotel .gh-tabela-rel tfoot td { position: static; }
+  /* Cabeçalho em uma linha só (e em 12px, acima do 8pt das células) e o
+     selo "Contrato assinado" inteiro deixavam a tabela ~30% mais larga que
+     a folha, e o navegador encolhia tudo para caber. */
+  .dash-hotel .gh-tabela-rel th { white-space: normal; font-size: 8pt; }
+  .dash-hotel .gh-tabela-rel .gh-badge { white-space: normal; }
+  .dash-hotel .gh-grid-2 { break-inside: avoid; }
+}
+
+/* ── Faixa de ferramentas da tabela ────────────────────────────────────
+   A busca desceu do painel de filtros para cá, e o botão de criar desceu
+   do cabeçalho da página. O painel de cima passou a ter só o que recorta o
+   conjunto (Ano, Mês, Situação); a busca filtra as linhas já renderizadas,
+   e o botão cria o registro que vai aparecer nesta tabela. */
+.dash-hotel .gh-tabela-barra {
+  display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border);
+}
+.dash-hotel .gh-tabela-busca { position: relative; flex: 1 1 260px; max-width: 380px; }
+.dash-hotel .gh-tabela-busca input {
+  width: 100%; padding: 7px 10px 7px 32px;
+  font: 400 var(--fs-2)/1.4 var(--font-ui);
+  color: var(--text); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 7px;
+}
+.dash-hotel .gh-tabela-busca input:focus {
+  outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent;
+}
+.dash-hotel .gh-tabela-busca .i {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+  width: 15px; height: 15px; color: var(--gh-muted); pointer-events: none;
+}
+/* Empurra a ação para a direita mesmo quando a tela não tem busca. Só a
+   primeira: com margem automática em todas, o espaço livre se dividiria e
+   as ações do relatório (Exportar CSV e Imprimir) ficariam afastadas. */
+.dash-hotel .gh-tabela-acao { margin-left: auto; text-decoration: none; }  /* a do CSV é <a> */
+.dash-hotel .gh-tabela-acao ~ .gh-tabela-acao { margin-left: 0; }
+
+/* ═══════════════════════════════════════════════════════════════
+ * NAVEGAÇÃO EM ABAS (substitui a sidebar)
+ *
+ * A sidebar sumia no modo embed (`body.embed-mode .sidebar` no
+ * bi-theme.css, compartilhado pelos 16 dashboards e por isso não
+ * alterado aqui), e com ela sumia toda a navegação dentro do iframe.
+ * Estas classes vivem dentro do conteúdo, onde o embed não alcança.
+ *
+ * Marca, grupos e relógio/tema dividem uma única linha, dentro de um
+ * cartão com borda própria — antes eram dois blocos soltos (marca e
+ * grupos) com duas linguagens de "ativo" diferentes (sublinhado no
+ * grupo, pill com borda na tela), o que lia como dois sistemas colados.
+ * Os grupos agora usam o mesmo segmented control do filtro de período
+ * (`.gh-seg`/`.gh-periodo`), e as telas do grupo ativo só ganham uma
+ * fileira própria quando o grupo tem mais de uma — grupo de tela única
+ * é o próprio botão do segmented control, sem pill redundante embaixo.
+ * ═══════════════════════════════════════════════════════════════ */
+
+.dash-hotel .gh-nav {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--rad-box); box-shadow: var(--sh-sm);
+  margin: var(--sp-4) var(--sp-5) 0; overflow: hidden;
+}
+
+.dash-hotel .gh-topo {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+}
+.dash-hotel .gh-marca { display: flex; align-items: center; gap: 9px; flex: none; }
+.dash-hotel .gh-marca-ico {
+  width: 30px; height: 30px; border-radius: 7px; background: var(--red);
+  display: grid; place-items: center; flex: none;
+}
+.dash-hotel .gh-marca-ico svg {
+  width: 16px; height: 16px; stroke: #fff; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.dash-hotel .gh-marca-nome { font: 700 13px/1.1 var(--font-ui); color: var(--text); }
+.dash-hotel .gh-marca-sub {
+  font: 600 9px/1.1 var(--font-ui); letter-spacing: .12em; color: var(--gh-muted);
+}
+
+.dash-hotel .gh-divisor { width: 1px; align-self: stretch; background: var(--border); flex: none; }
+
+.dash-hotel .gh-abas-grupos { flex: none; }
+.dash-hotel .gh-abas-grupos .gh-periodo { text-decoration: none; }
+
+.dash-hotel .gh-topo-dir { margin-left: auto; display: flex; align-items: center; gap: var(--sp-3); flex: none; }
+.dash-hotel .gh-relogio { font: 400 11px/1 var(--font-ui); color: var(--gh-muted); white-space: nowrap; }
+.dash-hotel .gh-tema-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 10px; border-radius: var(--rad-ctl);
+  background: transparent; border: 1px solid var(--border); color: var(--gh-muted);
+  font: 500 12px/1 var(--font-ui); cursor: pointer;
+}
+.dash-hotel .gh-tema-btn:hover { color: var(--text); border-color: var(--gh-muted); }
+.dash-hotel .gh-tema-btn svg {
+  width: 13px; height: 13px; fill: none; stroke: currentColor;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* telas do grupo ativo. Sem JS todos os blocos ficam visíveis — a
+   classe `js` é posta pelo próprio script e só ela autoriza esconder. */
+.dash-hotel .gh-abas-painel { border-top: 1px solid var(--border); padding: var(--sp-2) var(--sp-4) var(--sp-3); }
+.dash-hotel .gh-abas-itens { display: flex; flex-wrap: wrap; gap: 4px; }
+.dash-hotel .gh-abas-itens + .gh-abas-itens { margin-top: 4px; }
+.dash-hotel .gh-abas-painel.js .gh-abas-itens { display: none; }
+.dash-hotel .gh-abas-painel.js .gh-abas-itens.ativo { display: flex; }
+
+.dash-hotel .gh-aba {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 30px; padding: 0 11px; border-radius: var(--rad-ctl);
+  color: var(--gh-muted); text-decoration: none; white-space: nowrap;
+  font: 500 12.5px/1 var(--font-ui); border: 1px solid transparent;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.dash-hotel .gh-aba:hover { background: var(--card2); color: var(--text); }
+.dash-hotel .gh-aba.ativa {
+  background: var(--red-glow); color: var(--red); border-color: var(--red); font-weight: 600;
+}
+.dash-hotel .gh-aba-ico { display: grid; place-items: center; width: 14px; height: 14px; flex: none; }
+.dash-hotel .gh-aba-ico svg {
+  width: 14px; height: 14px; fill: none; stroke: currentColor;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Última linha do cartão de navegação — título e subtítulo da tela ativa
+   (ex. "Hotéis" / "Contratos, nota fiscal..."), com o contador à direita.
+   Substituiu o antigo `.header` escuro (bi-theme, gradiente, cartão à
+   parte): duas linguagens visuais empilhadas liam como dois sistemas
+   colados. Agora é só mais uma linha do mesmo cartão claro, separada por
+   um filete — mesmo tratamento da linha de sub-abas acima. */
+.dash-hotel .gh-titulo-faixa {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: var(--sp-3); padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--border);
+}
+.dash-hotel .gh-titulo-nome { font: 600 var(--fs-4)/1.3 var(--font-ui); color: var(--text); }
+.dash-hotel .gh-titulo-sub { font: 400 var(--fs-2)/1.4 var(--font-ui); color: var(--gh-muted); margin-top: 2px; }
+.dash-hotel .gh-titulo-badge {
+  flex: none; display: inline-flex; align-items: center;
+  height: 24px; padding: 0 var(--sp-2); border-radius: var(--rad-ctl);
+  background: var(--red-glow); color: var(--red);
+  font: 600 var(--fs-1)/1 var(--font-ui); white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .dash-hotel .gh-nav { margin-left: var(--sp-3); margin-right: var(--sp-3); }
+  .dash-hotel .gh-topo { flex-wrap: wrap; row-gap: var(--sp-2); }
+  .dash-hotel .gh-divisor { display: none; }
+  .dash-hotel .gh-abas-grupos { order: 3; width: 100%; }
+  .dash-hotel .gh-relogio { display: none; }
+}
+
+/* Painel de filtros: era a barra escura .filters do bi-theme (padrão dos
+   16 dashboards de BI, cheia de borda a borda), colada embaixo do antigo
+   .header. Agora que mudou de lugar (fica depois do aviso de eventos
+   próximos, dentro do .main), vira cartão claro no mesmo sistema visual de
+   .gh-alerta/.gh-stats — não faz mais sentido ser a única peça escura no
+   meio de cartões claros. */
+.dash-hotel .filters {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--rad-box); box-shadow: var(--sh-sm);
+  margin: 0 0 var(--sp-3); padding: var(--sp-3) var(--sp-4);
+}
+.dash-hotel .filter-label { color: var(--gh-muted); }
+.dash-hotel .filter-sep { background: var(--border); }
+.dash-hotel .multi-dd-btn {
+  background: var(--card2); border: 1px solid var(--border); color: var(--text);
+}
+.dash-hotel .multi-dd-btn:hover,
+.dash-hotel .multi-dd-btn.open { background: var(--card2); border-color: var(--gh-muted); color: var(--text); }
+.dash-hotel .multi-dd-btn.has-value {
+  background: var(--red-glow); border-color: var(--red); color: var(--red);
+}
+.dash-hotel .dd-caret { color: var(--gh-muted); }
+.dash-hotel .multi-dd-list {
+  background: var(--card); border: 1px solid var(--border); box-shadow: 0 8px 24px rgba(0,0,0,.16);
+}
+.dash-hotel .multi-dd-item { color: var(--text); }
+.dash-hotel .multi-dd-item:hover, .dash-hotel .multi-dd-item.focused { background: var(--card2); }
+.dash-hotel .multi-dd-item.selected { color: var(--red); font-weight: 700; }
+.dash-hotel .multi-dd-item input[type="checkbox"] { accent-color: var(--red); }
+.dash-hotel .multi-dd-item .dd-check { border-color: var(--gh-muted); }
+.dash-hotel .multi-dd-item.selected .dd-check { background: var(--red); border-color: var(--red); }
+.dash-hotel .btn-apply { border-radius: var(--rad-ctl); }
+.dash-hotel .btn-clear {
+  background: var(--card2); border: 1px solid var(--border); color: var(--gh-muted); border-radius: var(--rad-ctl);
+}
+.dash-hotel .btn-clear:hover { background: var(--card); color: var(--text); border-color: var(--gh-muted); }
+
+/* ═══════════════════════════════════════════════════════════════
+ * BUSCA SOBRE SELECT LONGO (vínculo de evento)
+ *
+ * O <select> nativo continua no formulário e continua sendo a fonte
+ * da verdade — some da vista, não do DOM. Sem JavaScript nada disto
+ * se aplica e o campo volta a ser o select comum.
+ * ═══════════════════════════════════════════════════════════════ */
+
+.dash-hotel .gh-busca-sel { position: relative; }
+
+/* Fora da vista sem sair do formulário: display:none tiraria o campo
+   da validação nativa do HTML, e o required deixaria de valer. */
+.dash-hotel .gh-campo select.gh-busca-nativo {
+  position: absolute; opacity: 0; pointer-events: none;
+  width: 100%; height: 36px; margin: 0; border: 0;
+}
+
+.dash-hotel .gh-busca-campo {
+  width: 100%; height: 36px; padding: 0 var(--sp-3);
+  border: 1px solid var(--border); border-radius: var(--rad-ctl);
+  background: var(--card); color: var(--text);
+  font: 400 var(--fs-3)/1.4 var(--font-ui);
+  text-align: left; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.dash-hotel .gh-busca-campo:focus-visible { outline: none; border-color: var(--consulta); }
+.dash-hotel .gh-busca-campo.vazio { color: var(--gh-muted); }
+.dash-hotel .gh-busca-campo .txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash-hotel .gh-busca-campo .seta { flex: none; width: 14px; height: 14px; color: var(--gh-muted); }
+
+.dash-hotel .gh-busca-painel {
+  position: absolute; z-index: 40; left: 0; right: 0; top: calc(100% + 3px);
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--rad-ctl);
+  box-shadow: 0 8px 24px rgba(0,0,0,.16);
+  display: none; flex-direction: column; overflow: hidden;
+}
+.dash-hotel .gh-busca-sel.aberto .gh-busca-painel { display: flex; }
+
+.dash-hotel .gh-busca-painel > input {
+  width: 100%; height: 34px; padding: 0 var(--sp-3);
+  border: none; border-bottom: 1px solid var(--border); border-radius: 0;
+  background: transparent; color: var(--text);
+  font: 400 var(--fs-3)/1.4 var(--font-ui);
+}
+.dash-hotel .gh-busca-painel > input:focus { outline: none; }
+
+.dash-hotel .gh-busca-lista { max-height: 240px; overflow-y: auto; }
+.dash-hotel .gh-busca-op {
+  padding: 7px var(--sp-3); cursor: pointer;
+  font: 400 var(--fs-3)/1.35 var(--font-ui); color: var(--text);
+}
+.dash-hotel .gh-busca-op:hover,
+.dash-hotel .gh-busca-op.foco { background: var(--card2); }
+.dash-hotel .gh-busca-op.sel { color: var(--red); font-weight: 600; }
+.dash-hotel .gh-busca-op b { font-weight: 700; color: var(--red); }
+
+.dash-hotel .gh-busca-vazio {
+  padding: 12px var(--sp-3); color: var(--gh-muted); font: 400 var(--fs-2) var(--font-ui);
+}
+.dash-hotel .gh-busca-conta {
+  padding: 6px var(--sp-3); border-top: 1px solid var(--border);
+  font: 400 11px var(--font-ui); color: var(--gh-muted);
+}

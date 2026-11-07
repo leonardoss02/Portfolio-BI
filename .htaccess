@@ -1,0 +1,22 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Forçar HTTPS se ativado no arquivo de configuração
+   # RewriteCond %{HTTPS} !=on
+    #RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Repassar o header Authorization para o PHP sob CGI/FastCGI
+    # (necessário para $_SERVER['PHP_AUTH_USER'] / HTTP_AUTHORIZATION
+    # funcionarem com Basic Auth quando o PHP não roda como módulo Apache)
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+    # Redirecionar todas as URLs para o index.php
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+<FilesMatch "^\.env$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

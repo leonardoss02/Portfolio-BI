@@ -1,0 +1,29 @@
+# AI assistants
+CLAUDE.md
+GEMINI.md
+
+# Variáveis de ambiente (credenciais de banco)
+.env
+
+# Pasta interna gerada pelo framework (rate limit, cache)
+.mrphp/
+
+# Editor
+.vscode/
+
+# Arquivos de banco de dados
+*.sql
+
+# Uploads gerados
+uploads/
+
+# Logs
+*.log
+logs/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Configuração do fiveserver
+fiveserver.config.js

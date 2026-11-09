@@ -159,7 +159,7 @@ final class PosVenda
         $antes = array_filter(self::cardsC3($ctx), fn($d) => $d['criadoEm_dealV2']->format('Y-m-d') < $inicio);
         uasort($antes, fn($a, $b) => $b['criadoEm_dealV2'] <=> $a['criadoEm_dealV2']);
         $carteira = array_slice(array_keys($antes), 0, $tamanho);
-        $naoMapeados = array_flip((array) array_rand(array_flip($carteira), $tamanho - $ctx->config['liga']['mapeados']));
+        $naoMapeados = array_flip($s->chaves(array_flip($carteira), $tamanho - $ctx->config['liga']['mapeados']));
 
         foreach ($carteira as $i => $id) {
             $csm = $idsLiga[$i % count($idsLiga)];
@@ -197,7 +197,7 @@ final class PosVenda
         $s = $ctx->sorteio;
         $idsPorStatus = ConstantesDoCodigo::ler('comercial4', 'LIGA_STATUS_IDS');
         $campos = array_keys(ConstantesDoCodigo::ler('comercial4', 'LIGA_PRODUTOS'));
-        $aIniciar = $mapeado ? [] : array_flip((array) array_rand(array_flip($campos), $s->inteiro(1, 3)));
+        $aIniciar = $mapeado ? [] : array_flip($s->chaves(array_flip($campos), $s->inteiro(1, 3)));
 
         $json = [];
         foreach ($campos as $campo) {

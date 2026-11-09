@@ -51,6 +51,16 @@ return [
         }
     },
 
+    'chaves() sorteia N chaves distintas, sempre as mesmas com a mesma semente' => function () {
+        $itens = ['a' => 1, 'b' => 2, 'c' => 3, 'd' => 4, 'e' => 5];
+        $primeira = (new Aleatorio(2026))->chaves($itens, 3);
+        afirmarIgual($primeira, (new Aleatorio(2026))->chaves($itens, 3));
+        afirmarIgual(3, count(array_unique($primeira)));
+        foreach ($primeira as $chave) {
+            afirmar(array_key_exists($chave, $itens), "chave inexistente: $chave");
+        }
+    },
+
     'normal tem média próxima da pedida' => function () {
         $s = new Aleatorio(2026);
         $soma = 0.0;

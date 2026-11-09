@@ -192,8 +192,14 @@ array_push($entradas,
         'kpis.ingressos_vendidos' => '>0',
     ]),
     $json('/helenacastro/forms'),
-    $json('/helenacastro/jornadaDados?data_inicio={inicioMes}&data_fim={hoje}&responsavel=Helena%20Castro'),
-    $json('/helenacastro/jornadaResponsaveis'),
+    $json('/helenacastro/jornadaDados?data_inicio={inicioMes}&data_fim={hoje}&responsavel=Helena%20Castro', [
+        'kpis.leads' => '>0',
+        'kpis.carrinho' => '>0',
+        'kpis.pagos' => '>0',
+    ]),
+    $json('/helenacastro/jornadaResponsaveis', ['1' => 'naoVazio']),
+    // O primeiro lead da base sempre tem jornada (ver Jornada.php).
+    $json('/helenacastro/trilha?id=500001', ['eventos' => 'naoVazio']),
     $json('/helenacastro/buscaCliente?q=ana'),
 
     // Gestão de Eventos

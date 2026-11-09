@@ -297,6 +297,16 @@ return [
         'vendasMinimasNaSemana' => 8,
     ],
 
+    // Jornada do cliente no checkout (lead_tag)
+    'jornada' => [
+        // Além dos leads da Helena, do Sistema Admin e do Comercial 1 Digital, parte dos leads de evento.
+        'chanceLeadDeEvento' => 0.30,
+        // Leads que existem nas tags mas ainda não foram espelhados no leadV2.
+        'proporcaoSoNaJornada' => 0.03,
+        'chanceWebinar' => 0.05,
+        'origens' => ['Formulário do site', 'Formulário do Instagram', 'Conversa no WhatsApp'],
+    ],
+
     // Atendimento (Chatwoot)
     'atendimento' => [
         'chanceConversa' => 0.40,

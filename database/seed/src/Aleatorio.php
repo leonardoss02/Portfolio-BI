@@ -47,6 +47,12 @@ final class Aleatorio
         return $itens[$this->inteiro(0, count($itens) - 1)];
     }
 
+    /** N chaves distintas do array (no lugar de array_rand, que não respeita a semente). */
+    public function chaves(array $itens, int $quantidade): array
+    {
+        return $this->sorteador->pickArrayKeys($itens, $quantidade);
+    }
+
     /** Sorteia uma chave de acordo com o peso: ['a' => 3, 'b' => 1] dá "a" 75% das vezes. */
     public function ponderado(array $pesos): int|string
     {

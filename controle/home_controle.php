@@ -62,10 +62,6 @@ class home extends MRPHP{
         $this->verificarAcessoDashboard();
     }
 
-    public function biexplorer_controle(){
-        $this->verificarAcessoDashboard();
-    }
-
     public function marketing_controle(){
         $this->verificarAcessoDashboard();
     }

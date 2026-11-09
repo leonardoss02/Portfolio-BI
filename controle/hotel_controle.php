@@ -1066,8 +1066,8 @@ class hotel extends MRPHP
      * Limite de requisicoes por IP e rota, respondendo em JSON.
      *
      * O rateLimit() do core renderiza a pagina HTML de erro 429, o que quebra
-     * qualquer fetch() esperando JSON — o mesmo motivo pelo qual
-     * biexplorer_controle.php mantem a sua propria versao.
+     * qualquer fetch() esperando JSON; por isso este controller tem a sua
+     * propria versao, que responde em JSON.
      */
     private function rateLimitJson(int $maxTentativas, int $janela): void
     {

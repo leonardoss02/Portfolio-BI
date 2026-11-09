@@ -15,7 +15,7 @@ require_once __DIR__ . '/Repositorio.php';
  *
  * Concorrência: toda escrita é um ciclo ler-alterar-gravar sob `flock(LOCK_EX)`
  * mantido do começo ao fim. Escrever em arquivo temporário e renomear — o
- * padrão usado em controle/biexplorer_controle.php — serve para substituir um
+ * padrão comum para gravar JSON em disco — serve para substituir um
  * documento inteiro, mas aqui perderia a alteração de quem gravou no meio do
  * caminho, porque a leitura aconteceria fora do lock.
  */

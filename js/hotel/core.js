@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════════════
  * js/hotel/core.js — núcleo do sistema de Gestão de Eventos (hotéis)
  *
- * O projeto não tem bundler nem npm, então o padrão é o mesmo de
- * js/biexplorer.js: script clássico, um namespace global (GH), cada arquivo
+ * O projeto não tem bundler nem npm, então o padrão é:
+ * script clássico, um namespace global (GH), cada arquivo
  * um IIFE que apenas DEFINE — nada roda no parse. A view chama init() no fim.
  *
  * Substitui as 3.306 linhas de JS monolítico do sistema antigo, onde uma

@@ -1,7 +1,7 @@
 <?php
 /** Ver comentário equivalente em paginas/error/500.php. */
 $uriErro = $_SERVER['REQUEST_URI'] ?? '';
-$prefixosApi = ['/biexplorer/', '/sql/'];
+$prefixosApi = ['/sql/'];
 foreach ($prefixosApi as $prefixo) {
     if (str_starts_with($uriErro, $prefixo)) {
         header('Content-Type: application/json; charset=utf-8');

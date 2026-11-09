@@ -532,7 +532,7 @@ function initFiltersToggle(opts) {
   if (opts.collapseOnApply !== false) {
     // Delegação pela classe, escopada no container: a maioria das views usa
     // onclick="applyFilters()" sem id no botão, e há .btn-apply fora de barra
-    // de filtro em outras telas (biexplorer) que não podem disparar isto.
+    // de filtro em outras telas, que não podem disparar isto.
     box.addEventListener('click', e => {
       if (!e.target.closest('.btn-apply')) return;
       set(false);

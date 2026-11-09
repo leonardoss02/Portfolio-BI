@@ -15,6 +15,9 @@ declare(strict_types=1);
 $raiz = dirname(__DIR__);
 require __DIR__ . '/lib/afirmar.php';
 
+// A base completa (escala 1.0) não cabe nos 128 MB padrão do PHP.
+ini_set('memory_limit', '1024M');
+
 // Warning e notice viram falha: um aviso do PHP no gerador é um bug.
 set_error_handler(function (int $nivel, string $mensagem, string $arquivo, int $linha): bool {
     throw new ErrorException($mensagem, 0, $nivel, $arquivo, $linha);

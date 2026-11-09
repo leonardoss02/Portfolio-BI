@@ -29,6 +29,7 @@ $placeholders = [
     '{mes}' => $hoje->format('n'),
     '{hoje}' => $hoje->format('Y-m-d'),
     '{inicioMes}' => $hoje->format('Y-m-01'),
+    '{inicioAno}' => $hoje->format('Y-01-01'),
     '{ha29dias}' => $hoje->modify('-29 days')->format('Y-m-d'),
     '{anoAnterior}' => (string) ((int) $hoje->format('Y') - 1),
 ];

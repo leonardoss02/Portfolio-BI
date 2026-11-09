@@ -59,6 +59,8 @@ return [
         'advs' => ['Bruno Teixeira', 'Isabela Rocha', 'Gabriel Menezes', 'Natália Faria', 'Otávio Lins', 'Vanessa Coelho'],
         // Quem dá a palestra nos eventos presenciais
         'palestrantes' => ['Camila Duarte', 'Juliana Prado', 'Rafael Torres', 'Beatriz Lemos'],
+        // Vendedores com painel próprio (controle/{nome}_controle.php)
+        'vendedoresComPainel' => ['Rafael Torres', 'Juliana Prado', 'Camila Duarte', 'Beatriz Lemos'],
         'jornada_extra' => 'Sistema Admin',
         'venda_direta' => 'Venda Direta',
     ],
@@ -224,6 +226,45 @@ return [
         'chanceValorIngresso' => 0.90,
         'valorCadeiraBrl' => 100,
         'valorConsultaBrl' => 690,
+    ],
+
+    // -------------------------------------------------------------------------
+    // Comercial 2 (C5): da consulta vendida ao combo
+    // -------------------------------------------------------------------------
+    'c5' => [
+        // Quem atende a consulta (pesos).
+        'responsaveis' => [
+            'Paulo Nogueira' => 17, 'Rafael Torres' => 17, 'Camila Duarte' => 17, 'Beatriz Lemos' => 17,
+            'Juliana Prado' => 17, 'Ricardo Albuquerque' => 6, 'Gustavo Leal' => 6,
+            'Ana Moraes' => 1, 'Sônia Teles' => 1, 'Cláudia Rocha' => 1,
+        ],
+        'chanceSemAgendamento' => 0.05,
+        'diasAteAgendamento' => 14,
+        'chanceRealizada' => 0.85,
+        // Parte das consultas é realizada no mês seguinte ao agendado.
+        'chanceRealizadaNoMesSeguinte' => 0.08,
+        'chanceMotivoNaoCompareceu' => 0.10,
+        'chanceSinal' => 0.70,
+        'chanceFpAgendado' => 0.65,
+        'chanceFpRealizado' => 0.85,
+        // Realizou a consulta, não agendou FP e desistiu (com motivo).
+        'chancePerdaSemFp' => 0.40,
+        'chanceSerasa' => 0.70,
+        // Depois do FP realizado (pesos).
+        'desfechoFp' => ['combo' => 50, 'enviado' => 10, 'perdido' => 25, 'aguardando' => 15],
+        'fasesDePerda' => ['Comercial 3' => 60, 'Distrato' => 20, 'Lead sem qualificação' => 20],
+        'chanceDistratoAposCombo' => 0.06,
+        'chanceDistratoSemContrato' => 0.10,
+        // Lead de indicação ou B2B que fecha combo direto em C29/C31.
+        'chanceComboOutroPipe' => 0.02,
+    ],
+
+    // Retenção (C1): tenta recuperar quem perdeu como "Comercial 3"
+    'c1' => [
+        'chanceRetencao' => 0.30,
+        'chanceAgendada' => 0.80,
+        'chanceRealizada' => 0.60,
+        'chanceCombo' => 0.20,
     ],
 
     // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.

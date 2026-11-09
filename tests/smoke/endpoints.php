@@ -3,7 +3,7 @@
  * O que o teste de fumaça visita.
  *
  * Cada entrada:
- *   'url'    rota com placeholders: {ano} {mes} {hoje} {inicioMes} {ha29dias} {anoAnterior}
+ *   'url'    rota com placeholders: {ano} {mes} {hoje} {inicioMes} {inicioAno} {ha29dias} {anoAnterior}
  *   'tipo'   'json' ou 'html'
  *   'exigir' (json) caminho no JSON => condição: '>0', '>=N', 'entre:A:B', 'naoVazio', '===false', '===true', 'contem:valor'
  *   'contem' (html) texto que a página precisa conter
@@ -48,6 +48,8 @@ $json = function (string $url, array $exigir = []) {
 $ano = 'year={ano}';
 $anoMes = 'year={ano}&months={mes}';
 $mesAteHoje = 'data_inicio={inicioMes}&data_fim={hoje}';
+// Métricas raras (combo, distrato) podem zerar em poucos dias; para elas, o ano até hoje.
+$anoAteHoje = 'data_inicio={inicioAno}&data_fim={hoje}';
 
 array_push($entradas,
     // Executivo
@@ -58,21 +60,29 @@ array_push($entradas,
         'global.cadeira_vendida' => '>0',
         'global.consultas_vendidas' => '>0',
     ]),
+    $json("/executive/dados?$ano", ['global.combos_vendidos' => '>0', 'global.faturamento_total' => '>0', 'global.roi' => '>0']),
     $json("/executive/digitalDados?$anoMes"),
-    $json("/executive/especialistasDados?$mesAteHoje"),
-    $json("/executive/analiticoDados?$mesAteHoje"),
-    $json("/executive/serasaDados?$ano"),
+    $json("/executive/especialistasDados?$mesAteHoje", ['kpis.agendadas' => '>0', 'kpis.realizadas' => '>0']),
+    $json("/executive/especialistasDados?$anoAteHoje", [
+        'kpis.fp_vendido' => '>0',
+        'kpis.contrato_enviado' => '>0',
+        'kpis.combos_vendidos' => '>0',
+        'kpis.distrato' => '>0',
+        'kpis.churn_fp' => '>0',
+    ]),
+    $json("/executive/analiticoDados?$mesAteHoje", ['especialistas' => 'naoVazio']),
+    $json("/executive/serasaDados?$ano", ['resumo.comercial2.consultas_realizadas' => '>0']),
     $json('/executive/campanhas'),
     $json('/executive/forms'),
     $json('/executive/responsaveis'),
 
     // Comercial
-    $json("/comercial/dados?$ano"),
-    $json("/comercial/yoyDados?$ano"),
+    $json("/comercial/dados?$ano", ['evento.cb' => '>0', 'digital.cb' => '>0', 'retencao.cb' => '>0', 'totais.dist' => '>0']),
+    $json("/comercial/yoyDados?$ano", ['totais.cb' => '>0', 'totais_ly.cb' => '>0']),
     $json("/comercial/cadeirasDados?$ano", ['totais.leads' => '>0', 'totais.cadeiras' => '>0']),
     $json("/comercial/comercial1Dados?$ano", ['evento.ranking.0.cad' => '>0', 'evento.ranking.0.cv' => '>0']),
-    $json("/comercial/comercial2Dados?$ano"),
-    $json("/comercial/comercial3Dados?$ano"),
+    $json("/comercial/comercial2Dados?$ano", ['ranking.0.total_cr' => '>0', 'ranking.0.total_cb' => '>0']),
+    $json("/comercial/comercial3Dados?$ano", ['ranking.0.agend' => '>0', 'ranking.0.realizada' => '>0']),
     $json('/comercial/forms'),
     $json('/comercial/responsaveis'),
 
@@ -83,7 +93,7 @@ array_push($entradas,
     $json("/marketing/desempenhoDados?$ano", ['rankings.profissoes' => 'naoVazio', 'rankings.motivos' => 'naoVazio']),
     $json("/marketing/classificacaoDados?$ano"),
     $json("/marketing/classificacaoGrafico?$ano"),
-    $json("/marketing/descartesDados?$ano", ['totais.com1' => '>0']),
+    $json("/marketing/descartesDados?$ano", ['totais.com1' => '>0', 'totais.com2' => '>0', 'totais.com3' => '>0']),
     $json('/marketing/campanhas'),
     $json('/marketing/forms'),
     $json('/marketing/conjuntosAnuncio'),
@@ -95,6 +105,10 @@ array_push($entradas,
         'totais.cadeiras' => '>0',
         'totais.checkins' => '>0',
         'totais.consultas_vendidas' => '>0',
+        'totais.consultas_realizadas' => '>0',
+        'totais.fp_vendido' => '>0',
+        'totais.combos' => '>0',
+        'totais.faturamento' => '>0',
     ]),
     // Prévia: 2 eventos passados e o próximo, nessa ordem.
     $json('/eventos/preview', ['eventos.1.is_proximo' => '===false', 'eventos.2.is_proximo' => '===true']),
@@ -121,7 +135,12 @@ array_push($entradas,
     $json('/comercial4/ligaDados'),
 
     // Segmentos e pesquisas
-    $json("/credenciados/dados?$ano", ['kpis.total_leads' => '>0', 'kpis.qualificados' => '>0']),
+    $json("/credenciados/dados?$ano", [
+        'kpis.total_leads' => '>0',
+        'kpis.qualificados' => '>0',
+        'kpis.consultas_realizadas' => '>0',
+        'kpis.combo_vendido' => '>0',
+    ]),
     $json("/credenciados/grafico?$ano"),
     $json("/credenciados/registros?$ano"),
     $json("/dentistas/dados?$ano"),
@@ -130,8 +149,8 @@ array_push($entradas,
     $json('/dentistas/profissoes'),
     $json('/dentistas/formacoes'),
     $json("/npseventos/dados?$ano"),
-    $json("/consultacom2/dados?$anoMes"),
-    $json("/consultacom2/dadoseventos?$anoMes"),
+    $json("/consultacom2/dados?$anoMes", ['linhas' => 'naoVazio']),
+    $json("/consultacom2/dadoseventos?$anoMes", ['linhas' => 'naoVazio']),
     $json('/consultacom2/dadosplanilha'),
 
     // Helena Castro e Jornada
@@ -154,7 +173,12 @@ foreach (['rafaeltorres', 'julianaprado', 'camiladuarte', 'beatrizlemos'] as $ve
     // A Beatriz não tem aba de eventos (o endpoint existe, mas a tela não usa).
     $exigirEventos = $vendedor === 'beatrizlemos' ? [] : ['totais.ingressos_vendidos' => '>0'];
     array_push($entradas,
-        $json("/$vendedor/dados?$mesAteHoje"),
+        $json("/$vendedor/dados?$mesAteHoje", [
+            'kpis.consultas_agendadas' => '>0',
+            'kpis.consultas_realizadas' => '>0',
+            'kpis.consultas_a_realizar' => '>0',
+        ]),
+        $json("/$vendedor/dados?$anoAteHoje", ['kpis.fp_realizado' => '>0', 'kpis.combos_vendidos' => '>0']),
         $json("/$vendedor/grafico?$mesAteHoje&modo=anoMes"),
         $json("/$vendedor/forms"),
         $json("/$vendedor/eventosDados?$ano", $exigirEventos),

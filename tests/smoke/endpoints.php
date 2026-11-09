@@ -55,6 +55,8 @@ array_push($entradas,
         'global.custo_mkt' => '>0',
         'global.total_leads' => '>0',
         'global.leads_qualificados' => '>0',
+        'global.cadeira_vendida' => '>0',
+        'global.consultas_vendidas' => '>0',
     ]),
     $json("/executive/digitalDados?$anoMes"),
     $json("/executive/especialistasDados?$mesAteHoje"),
@@ -67,8 +69,8 @@ array_push($entradas,
     // Comercial
     $json("/comercial/dados?$ano"),
     $json("/comercial/yoyDados?$ano"),
-    $json("/comercial/cadeirasDados?$ano", ['totais.leads' => '>0']),
-    $json("/comercial/comercial1Dados?$ano"),
+    $json("/comercial/cadeirasDados?$ano", ['totais.leads' => '>0', 'totais.cadeiras' => '>0']),
+    $json("/comercial/comercial1Dados?$ano", ['evento.ranking.0.cad' => '>0', 'evento.ranking.0.cv' => '>0']),
     $json("/comercial/comercial2Dados?$ano"),
     $json("/comercial/comercial3Dados?$ano"),
     $json('/comercial/forms'),
@@ -88,7 +90,12 @@ array_push($entradas,
     $json('/marketing/anuncios'),
 
     // Eventos
-    $json("/eventos/dados?$ano", ['totais.qt_eventos' => '>0']),
+    $json("/eventos/dados?$ano", [
+        'totais.qt_eventos' => '>0',
+        'totais.cadeiras' => '>0',
+        'totais.checkins' => '>0',
+        'totais.consultas_vendidas' => '>0',
+    ]),
     // Prévia: 2 eventos passados e o próximo, nessa ordem.
     $json('/eventos/preview', ['eventos.1.is_proximo' => '===false', 'eventos.2.is_proximo' => '===true']),
     $json("/eventos/lista?$ano"),
@@ -128,7 +135,11 @@ array_push($entradas,
     $json('/consultacom2/dadosplanilha'),
 
     // Helena Castro e Jornada
-    $json('/helenacastro/dados?data_inicio={ha29dias}&data_fim={hoje}'),
+    $json('/helenacastro/dados?data_inicio={ha29dias}&data_fim={hoje}', [
+        'kpis.leads' => '>0',
+        'kpis.consultas_vendidas' => '>0',
+        'kpis.ingressos_vendidos' => '>0',
+    ]),
     $json('/helenacastro/forms'),
     $json('/helenacastro/jornadaDados?data_inicio={inicioMes}&data_fim={hoje}&responsavel=Helena%20Castro'),
     $json('/helenacastro/jornadaResponsaveis'),
@@ -140,11 +151,13 @@ array_push($entradas,
 
 // Painéis por vendedor
 foreach (['rafaeltorres', 'julianaprado', 'camiladuarte', 'beatrizlemos'] as $vendedor) {
+    // A Beatriz não tem aba de eventos (o endpoint existe, mas a tela não usa).
+    $exigirEventos = $vendedor === 'beatrizlemos' ? [] : ['totais.ingressos_vendidos' => '>0'];
     array_push($entradas,
         $json("/$vendedor/dados?$mesAteHoje"),
         $json("/$vendedor/grafico?$mesAteHoje&modo=anoMes"),
         $json("/$vendedor/forms"),
-        $json("/$vendedor/eventosDados?$ano"),
+        $json("/$vendedor/eventosDados?$ano", $exigirEventos),
     );
 }
 

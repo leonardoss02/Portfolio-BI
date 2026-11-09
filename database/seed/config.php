@@ -204,6 +204,28 @@ return [
         'formacoes' => ['Ensino médio', 'Graduação', 'Pós-graduação', 'Mestrado', 'Doutorado'],
     ],
 
+    // -------------------------------------------------------------------------
+    // Primeira venda: cadeira do evento e consulta
+    // -------------------------------------------------------------------------
+    'venda' => [
+        // Qualificado do On The Road que compra a cadeira.
+        'chanceCadeira' => 0.30,
+        // Quem tem cadeira de evento passado e faz check-in.
+        'chanceCheckin' => 0.70,
+        // Quem fez check-in e compra a consulta no próprio evento.
+        'chanceConsultaNoEvento' => 0.35,
+        // Qualificado digital, orgânico, de indicação, webinar ou 1:1 que compra a consulta.
+        'chanceConsultaDigital' => 0.22,
+        'diasAteConsultaDigital' => 10,
+        // Parte das cadeiras é vendida pela Helena Castro ou como "Venda Direta".
+        'chanceCadeiraHelena' => 0.05,
+        'chanceVendaDireta' => 0.15,
+        // Card de check-in com o valor do ingresso preenchido.
+        'chanceValorIngresso' => 0.90,
+        'valorCadeiraBrl' => 100,
+        'valorConsultaBrl' => 690,
+    ],
+
     // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.
     'cambio' => [
         'inicial' => 5.45,

@@ -12,6 +12,7 @@ final class Gerador
         'eventos' => [Eventos::class, 'gerar'],
         'marketing' => [Marketing::class, 'gerar'],
         'leads' => [Leads::class, 'gerar'],
+        'vendaConsulta' => [VendaConsulta::class, 'gerar'],
     ];
 
     /** Roda as etapas em ordem. Com $ate, para depois da etapa indicada. */

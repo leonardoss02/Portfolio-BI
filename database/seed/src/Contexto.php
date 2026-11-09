@@ -12,6 +12,9 @@ final class Contexto
     /** Catálogo de campanhas de marketing, preenchido pela etapa Marketing. */
     public array $campanhas = [];
 
+    /** Número do próximo cliente fictício (deixa cada e-mail único). */
+    public int $proximoCliente = 1;
+
     public function __construct(
         public readonly DateTimeImmutable $hoje,
         public readonly Aleatorio $sorteio,

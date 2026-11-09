@@ -15,6 +15,11 @@ declare(strict_types=1);
 $raiz = dirname(__DIR__);
 require __DIR__ . '/lib/afirmar.php';
 
+// Warning e notice viram falha: um aviso do PHP no gerador é um bug.
+set_error_handler(function (int $nivel, string $mensagem, string $arquivo, int $linha): bool {
+    throw new ErrorException($mensagem, 0, $nivel, $arquivo, $linha);
+});
+
 // O gerador não usa autoload: carrega todas as classes de database/seed/src.
 foreach (glob($raiz . '/database/seed/src/*.php') ?: [] as $classe) {
     require_once $classe;

@@ -134,6 +134,46 @@ return [
         ],
     ],
 
+    // -------------------------------------------------------------------------
+    // Marketing
+    // -------------------------------------------------------------------------
+    'marketing' => [
+        // A campanha de cada evento roda nos N dias antes dele.
+        'diasDivulgacaoEvento' => 30,
+        // Gasto por anúncio por dia, em USD (contas em reais recebem o valor convertido).
+        'gastoDiarioEvento' => [10, 35],
+        'gastoDiarioDigital' => [15, 70],
+        'cliquesDiarios' => [20, 140],
+        // Parte das linhas de evento chega sem identificador (o código cai no nome da campanha).
+        'chanceSemIdentificador' => 0.10,
+        'conjuntosEvento' => [
+            ['nome' => 'Interesse imigração', 'anuncios' => ['Vídeo palestrante']],
+            ['nome' => 'Público semelhante', 'anuncios' => ['Carrossel depoimentos']],
+        ],
+        'formDigital' => 'consulta-digital',
+        'digitais' => [
+            ['nome' => 'Consulta Digital - Meta', 'origem' => 'meta', 'conjuntos' => [
+                ['nome' => 'Profissionais 30-45', 'anuncios' => ['Vídeo depoimento', 'Imagem EUA']],
+                ['nome' => 'Interesse EUA', 'anuncios' => ['Carrossel vistos', 'Vídeo especialista']],
+            ]],
+            ['nome' => 'Consulta Digital - Google', 'origem' => 'google', 'conjuntos' => [
+                ['nome' => 'Pesquisa visto americano', 'anuncios' => ['Texto visto', 'Texto green card']],
+                ['nome' => 'Pesquisa morar nos EUA', 'anuncios' => ['Texto morar EUA', 'Texto imigração']],
+            ]],
+            ['nome' => 'Remarketing Consulta', 'origem' => 'meta', 'conjuntos' => [
+                ['nome' => 'Visitantes do site', 'anuncios' => ['Lembrete consulta', 'Prova social']],
+                ['nome' => 'Engajados Instagram', 'anuncios' => ['Reels caso de sucesso', 'Story oferta']],
+            ]],
+            ['nome' => 'EB-2 NIW Profissionais', 'origem' => 'google', 'conjuntos' => [
+                ['nome' => 'Engenheiros e TI', 'anuncios' => ['Texto EB-2 NIW', 'Display EB-2 NIW']],
+                ['nome' => 'Saúde e pesquisa', 'anuncios' => ['Texto NIW saúde', 'Display NIW saúde']],
+            ]],
+        ],
+        // Sem custo: chegam por canais próprios.
+        'organicas' => ['ORG Site', 'ORG Instagram', 'Negado Cliente'],
+        'indicacoes' => ['IND Clientes', 'F&F', 'MGM'],
+    ],
+
     // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.
     'cambio' => [
         'inicial' => 5.45,

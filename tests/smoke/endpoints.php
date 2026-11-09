@@ -51,7 +51,7 @@ $mesAteHoje = 'data_inicio={inicioMes}&data_fim={hoje}';
 
 array_push($entradas,
     // Executivo
-    $json("/executive/dados?$anoMes"),
+    $json("/executive/dados?$anoMes", ['global.custo_mkt' => '>0']),
     $json("/executive/digitalDados?$anoMes"),
     $json("/executive/especialistasDados?$mesAteHoje"),
     $json("/executive/analiticoDados?$mesAteHoje"),
@@ -71,7 +71,7 @@ array_push($entradas,
     $json('/comercial/responsaveis'),
 
     // Marketing
-    $json("/marketing/dados?$ano"),
+    $json("/marketing/dados?$ano", ['kpis.investimento' => '>0', 'tabelas.campanha.0.cliques' => '>0']),
     $json("/marketing/comparativoDados?$ano"),
     $json("/marketing/eventosDados?$ano"),
     $json("/marketing/desempenhoDados?$ano"),

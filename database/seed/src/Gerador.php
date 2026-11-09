@@ -10,6 +10,7 @@ final class Gerador
 {
     public const ETAPAS = [
         'eventos' => [Eventos::class, 'gerar'],
+        'marketing' => [Marketing::class, 'gerar'],
     ];
 
     /** Roda as etapas em ordem. Com $ate, para depois da etapa indicada. */

@@ -297,6 +297,14 @@ return [
         'vendasMinimasNaSemana' => 8,
     ],
 
+    // Faturas (USD)
+    'financeiro' => [
+        'chancePaga' => 0.75,
+        'chancePagaComAtraso' => 0.10,
+        'chanceCongelada' => 0.08,
+        'proporcaoSemCard' => 0.28,
+    ],
+
     // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.
     'cambio' => [
         'inicial' => 5.45,

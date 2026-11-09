@@ -115,7 +115,15 @@ array_push($entradas,
     $json("/eventos/lista?$ano"),
 
     // Financeiro, Atendimento, Jurídico
-    $json("/financeiro/dados?$ano"),
+    $json("/financeiro/dados?$ano", [
+        'kpis.recebido' => '>0',
+        'kpis.resgatado' => '>0',
+        'kpis.emDia' => '>0',
+        'kpis.atrasado' => '>0',
+        'kpis.inadimplente' => '>0',
+    ]),
+    // Primeiro cliente do QuickBooks (série começa em 4001); o e-mail vem do card no CRM.
+    $json('/financeiro/parcelas?customer=4001', ['rows' => 'naoVazio', 'rows.0.email' => 'naoVazio']),
     $json("/chatwoot/dados?$anoMes"),
     $json("/chatwoot/serie?$anoMes"),
     $json("/chatwoot/detalhe?$anoMes&responsavel=Helena"),

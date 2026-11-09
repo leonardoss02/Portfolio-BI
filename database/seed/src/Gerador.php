@@ -17,6 +17,7 @@ final class Gerador
         'dentistas' => [Dentistas::class, 'gerar'],
         'posVenda' => [PosVenda::class, 'gerar'],
         'financeiro' => [Financeiro::class, 'gerar'],
+        'atendimento' => [Atendimento::class, 'gerar'],
     ];
 
     /** Roda as etapas em ordem. Com $ate, para depois da etapa indicada. */

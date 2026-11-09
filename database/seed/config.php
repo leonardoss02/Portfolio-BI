@@ -297,6 +297,15 @@ return [
         'vendasMinimasNaSemana' => 8,
     ],
 
+    // Atendimento (Chatwoot)
+    'atendimento' => [
+        'chanceConversa' => 0.40,
+        'chanceSemResposta' => 0.03,
+        'chanceSentinela' => 0.02,
+        'chanceMensagemRecebida' => 0.75,
+        'minimoConversasHoje' => 6,
+    ],
+
     // Faturas (USD)
     'financeiro' => [
         'chancePaga' => 0.75,

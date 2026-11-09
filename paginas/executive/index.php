@@ -1720,7 +1720,7 @@
 
 const API = '<?= $this->site ?>executive/dados';
 const MONTHS  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const YEARS = ['2025', '2026'];
+const YEARS = anosDesde(2025);
 
 // ── Multi-select dropdown factory ─────────────────────────────
 const yearDropdown  = createMultiDropdown('year-wrap',  'year-btn',  'year-list',

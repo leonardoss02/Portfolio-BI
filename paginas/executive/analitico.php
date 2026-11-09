@@ -150,7 +150,7 @@
 <script>
 const API_URL = '<?= $this->site ?>executive/analiticoDados';
 const MONTHS  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const YEARS   = ['2025', '2026'];
+const YEARS   = anosDesde(2025);
 
 // ── Instanciar dropdowns ──────────────────────────────────────
 const ESPECIALISTAS_LIST = ['Rafael Torres', 'Paulo Nogueira', 'Camila Duarte', 'Juliana Prado', 'Beatriz Lemos', 'Ricardo Albuquerque'];

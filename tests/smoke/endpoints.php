@@ -252,4 +252,12 @@ foreach (['rafaeltorres', 'julianaprado', 'camiladuarte', 'beatrizlemos'] as $ve
     );
 }
 
+// Envelhecimento: gere a base com --hoje=2027-03-15 e rode com --apenas=envelhecimento.
+// Prova que a conversão do custo de marketing funciona depois de 2026.
+array_push($entradas,
+    ['url' => '/executive/dados?year=2027&months=1,2,3', 'tipo' => 'json', 'grupo' => 'envelhecimento', 'exigir' => ['global.custo_mkt' => '>0']],
+    ['url' => '/marketing/dados?year=2027', 'tipo' => 'json', 'grupo' => 'envelhecimento', 'exigir' => ['kpis.investimento' => '>0']],
+    ['url' => '/eventos/dados?year=2027', 'tipo' => 'json', 'grupo' => 'envelhecimento', 'exigir' => ['totais.investimento_mkt' => '>0']],
+);
+
 return $entradas;

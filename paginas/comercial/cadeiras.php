@@ -632,7 +632,7 @@ function renderTudo() {
 
 <script>
 // ── 7. Filtros ────────────────────────────────────────────────
-const YEARS  = ['2024', '2025', '2026', '2027'];
+const YEARS  = anosDesde(2025);
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 // A lista do time é fixa também aqui, mas ela NÃO é a autoridade: o

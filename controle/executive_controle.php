@@ -1242,13 +1242,13 @@ class executive extends MRPHP
         foreach ($classesQuery as $key => $classe) {
             $cond = $this->condClasseCampanha('cm.nomeCampanha_custoMkt', $classe);
             $selects[] = "SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' AND $cond THEN cm.valor_custoMkt
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') AND $cond THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' AND $cond THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') AND $cond THEN cm.valor_custoMkt
                     ELSE 0
                 END) AS dollar_{$key}";
             $selects[] = "SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                     ELSE 0
                 END) AS real_{$key}";
         }
@@ -1539,15 +1539,15 @@ class executive extends MRPHP
             foreach ($periodosAtivos as $pKey => [$start, $end]) {
                 $dp = $this->condPeriodo('cm.data_custoMkt', $start, $end);
                 $selects[] = "SUM(CASE
-                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' AND $cond THEN cm.valor_custoMkt
-                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') AND $cond THEN cm.valor_custoMkt
+                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' AND $cond THEN cm.valor_custoMkt
+                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') AND $cond THEN cm.valor_custoMkt
                         ELSE 0
                     END) AS dollar_{$segKey}_{$pKey}";
                 $params = array_merge($params, $dp['params'], $dp['params']);
 
                 $selects[] = "SUM(CASE
-                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                        WHEN {$dp['sql']} AND YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                         ELSE 0
                     END) AS real_{$segKey}_{$pKey}";
                 $params = array_merge($params, $dp['params'], $dp['params']);
@@ -1858,13 +1858,13 @@ class executive extends MRPHP
         foreach (self::SEGMENTOS_FORM as $key => $classe) {
             $cond = $this->condFormClasseCustoMkt($classe);
             $selects[] = "SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' AND $cond THEN cm.valor_custoMkt
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') AND $cond THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' AND $cond THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') AND $cond THEN cm.valor_custoMkt
                     ELSE 0
                 END) AS dollar_{$key}";
             $selects[] = "SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' AND $cond THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                     ELSE 0
                 END) AS real_{$key}";
         }

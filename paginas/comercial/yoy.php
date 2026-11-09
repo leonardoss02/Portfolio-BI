@@ -624,7 +624,7 @@ function renderTudo() {
 }
 
 // ── 8. Filtros ────────────────────────────────────────────────
-const YEARS  = ['2024', '2025', '2026', '2027'];
+const YEARS  = anosDesde(2025);
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 // Lista fixa (7 valores distintos no CRM). '(vazio)' é o token que o

@@ -408,7 +408,7 @@ const UTMTERMS_URL = '<?= $this->site ?>dentistas/utmterms';
 const PROFISSOES_URL = '<?= $this->site ?>dentistas/profissoes';
 const FORMACOES_URL  = '<?= $this->site ?>dentistas/formacoes';
 
-const YEARS  = ['2024', '2025', '2026', '2027'];
+const YEARS  = anosDesde(2025);
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const yearDropdown      = createMultiDropdown('year-wrap',  'year-btn',  'year-list',  YEARS,  l => l, l => l);

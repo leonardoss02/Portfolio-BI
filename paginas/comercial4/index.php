@@ -446,7 +446,7 @@ const API_REGISTROS   = '<?= $this->site ?>comercial4/registros';
 const API_OPCOES      = '<?= $this->site ?>comercial4/opcoes';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const YEARS  = ['2024', '2025', '2026'];
+const YEARS  = anosDesde(2025);
 const FASES  = ['Aplicados', 'Milestone 1', 'Milestone 2', 'Milestone 3', 'RFE/Noid Respondida', 'RFE/Noid Recebida', 'RFE Ajuste de status'];
 const PAPEL_LABEL = { csm: 'CSM', caseManager: 'Case Manager', advMl1: 'ADV ML1', advMl2: 'ADV ML2', advMl3: 'ADV ML3' };
 
@@ -841,6 +841,6 @@ function clearFilters() {
   applyFilters();
 }
 
-yearDropdown.select(['2026']);
+yearDropdown.select([String(new Date().getFullYear())]);
 applyFilters();
 </script>

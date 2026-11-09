@@ -174,7 +174,7 @@ table.det tbody tr.total td { border-top: 2px solid var(--border); border-bottom
 const API       = '<?= $this->site ?>eventos/dados';
 const LISTA_API = '<?= $this->site ?>eventos/lista';
 
-const YEARS  = ['2024', '2025', '2026', '2027'];
+const YEARS  = anosDesde(2025);
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const yearDropdown  = createMultiDropdown('year-wrap',  'year-btn',  'year-list',  YEARS,  l => l, l => l);

@@ -328,7 +328,7 @@ const CAMPANHAS_URL = '<?= $this->site ?>marketing/campanhas';
 const FORMS_URL     = '<?= $this->site ?>marketing/forms';
 const CONJUNTOS_URL = '<?= $this->site ?>marketing/conjuntosAnuncio';
 const ANUNCIOS_URL  = '<?= $this->site ?>marketing/anuncios';
-const YEARS  = ['2024', '2025', '2026'];
+const YEARS  = anosDesde(2025);
 const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 const yearDropdown  = createMultiDropdown('year-wrap',  'year-btn',  'year-list',  YEARS,  l => l, l => l);

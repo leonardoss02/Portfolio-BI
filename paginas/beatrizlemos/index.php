@@ -330,7 +330,7 @@ const API_URL     = '<?= $this->site ?>beatrizlemos/dados';
 const FORMS_URL   = '<?= $this->site ?>beatrizlemos/forms';
 const GRAFICO_URL = '<?= $this->site ?>beatrizlemos/grafico';
 const MONTHS      = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const YEARS       = ['2024', '2025', '2026'];
+const YEARS       = anosDesde(2025);
 
 let currentModo   = 'anoMes';
 // Últimos filtros aplicados via applyFilters()/clearFilters() — usados por

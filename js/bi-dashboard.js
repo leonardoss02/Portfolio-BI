@@ -816,3 +816,14 @@ function initDicionario(opts) {
   var reduzir = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (scroller && !reduzir) scroller.style.scrollBehavior = 'smooth';
 }
+
+// ============================================================
+// Anos dos filtros: do primeiro ano com dados até o ano atual.
+// Evita listas fixas, que com o tempo deixam o ano corrente de fora.
+// ============================================================
+function anosDesde(primeiro) {
+  const atual = new Date().getFullYear();
+  const anos = [];
+  for (let ano = primeiro; ano <= atual; ano++) anos.push(String(ano));
+  return anos;
+}

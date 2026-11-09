@@ -278,7 +278,7 @@ const RESPONSAVEIS_URL = '<?= $this->site ?>law/responsaveis';
 const CICLOS_URL       = '<?= $this->site ?>law/ciclos';
 const GRAFICO_URL      = '<?= $this->site ?>law/prioridadeGrafico';
 const MONTHS           = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const YEARS            = ['2024', '2025', '2026'];
+const YEARS            = anosDesde(2025);
 const STATUS_OPTS       = ['Em Aberto', 'Aplicados', 'Aprovados', 'NVC'];
 const MILESTONE_OPTS    = ['ML1', 'ML2', 'ML3'];
 
@@ -550,6 +550,6 @@ function clearFilters() {
   loadDashboard(null, null, null, null, null, null, null, null, currentGranularidade);
 }
 
-yearDropdown.select(['2026']);
+yearDropdown.select([String(new Date().getFullYear())]);
 applyFilters();
 </script>

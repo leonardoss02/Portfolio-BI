@@ -234,7 +234,7 @@ Chart.register(ChartDataLabels);
 
 const API_DADOS    = '<?= $this->site ?>financeiro/dados';
 const API_PARCELAS = '<?= $this->site ?>financeiro/parcelas';
-const YEARS  = ['2019','2020','2021','2022','2023','2024','2025','2026'];
+const YEARS  = anosDesde(2025);
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 // fUSD/fUSD0/fData não existem em js/bi-dashboard.js (fBRL de lá formata

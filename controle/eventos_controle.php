@@ -966,13 +966,13 @@ class eventos extends MRPHP
                 e.id_evento,
                 COALESCE(SUM(
                     CASE
-                        WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta'
+                        WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta'
                             THEN cm.valor_custoMkt
-                        WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1','Dollar 2')
+                        WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1','Dollar 2')
                             THEN cm.valor_custoMkt
-                        WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google'
+                        WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google'
                             THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio,0)
-                        WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2'
+                        WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2'
                             THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio,0)
                         ELSE 0
                     END

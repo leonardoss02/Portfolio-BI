@@ -334,7 +334,7 @@
 
 const API    = '<?= $this->site ?>executive/serasaDados';
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const YEARS  = ['2024','2025','2026'];
+const YEARS  = anosDesde(2025);
 
 const yearDropdown  = createMultiDropdown('year-wrap',  'year-btn',  'year-list',  YEARS,  l => l, l => l);
 const monthDropdown = createMultiDropdown('month-wrap', 'month-btn', 'month-list', MONTHS, l => l, (l, i) => i + 1);

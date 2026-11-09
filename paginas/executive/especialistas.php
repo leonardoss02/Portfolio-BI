@@ -336,7 +336,7 @@
 
 const API_URL = '<?= $this->site ?>executive/especialistasDados';
 const MONTHS  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const YEARS   = ['2025', '2026'];
+const YEARS   = anosDesde(2025);
 
 let currentGran = 'mes';
 

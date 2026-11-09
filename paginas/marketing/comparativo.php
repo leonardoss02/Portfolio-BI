@@ -280,7 +280,7 @@ const FORMS_URL      = '<?= $this->site ?>marketing/forms';
 const CONJUNTOS_URL  = '<?= $this->site ?>marketing/conjuntosAnuncio';
 const ANUNCIOS_URL   = '<?= $this->site ?>marketing/anuncios';
 
-const YEARS  = ['2024', '2025', '2026'];
+const YEARS  = anosDesde(2025);
 const MESES_UI = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 let DADOS = null;

@@ -224,9 +224,9 @@ const CRED_YEARS = Array.from({ length: Math.max(1, CRED_NOW_YEAR - 2023) }, (_,
 
 const credYearDropdown = createMultiDropdown('year-wrap', 'year-btn', 'year-list', CRED_YEARS, value => value, value => value);
 const credMonthDropdown = createMultiDropdown('month-wrap', 'month-btn', 'month-list', CRED_MONTHS, value => value, (value, index) => index + 1);
-credYearDropdown.select(['2026']);
+credYearDropdown.select([String(CRED_NOW_YEAR)]);
 
-let credFilters = { year: '2026', months: null, data_inicio: null, data_fim: null };
+let credFilters = { year: String(CRED_NOW_YEAR), months: null, data_inicio: null, data_fim: null };
 let credGranularity = 'mes';
 let credAllRecords = [];
 let credRecordsSort = { key: 'data_formulario', dir: 'desc' };

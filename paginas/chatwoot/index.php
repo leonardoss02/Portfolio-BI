@@ -282,7 +282,7 @@ const API_DADOS   = '<?= $this->site ?>chatwoot/dados';
 const API_SERIE   = '<?= $this->site ?>chatwoot/serie';
 const API_DETALHE = '<?= $this->site ?>chatwoot/detalhe';
 
-const YEARS  = ['2025', '2026'];
+const YEARS  = anosDesde(2025);
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const TEAM   = ['Helena', 'Eduardo Pires', 'Priscila Rangel', 'Fernanda matos'];
 const STATUSES = [

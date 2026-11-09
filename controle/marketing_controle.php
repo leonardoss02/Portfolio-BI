@@ -1122,13 +1122,13 @@ class marketing extends MRPHP
             $prefix = $cond !== null ? "($cond) AND " : '';
             return "
                 SUM(CASE
-                    WHEN {$prefix}YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
-                    WHEN {$prefix}YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
+                    WHEN {$prefix}YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
+                    WHEN {$prefix}YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
                     ELSE 0
                 END) AS custo_dollar_$sufixo,
                 SUM(CASE
-                    WHEN {$prefix}YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                    WHEN {$prefix}YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN {$prefix}YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN {$prefix}YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                     ELSE 0
                 END) AS custo_real_$sufixo,
                 SUM(CASE WHEN {$prefix}1=1 THEN cm.clicks_custoMkt ELSE 0 END) AS cliques_$sufixo";
@@ -1177,13 +1177,13 @@ class marketing extends MRPHP
                 cm.nomeAnuncio_custoMkt AS anuncio,
                 cm.origem_custoMkt AS origem,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
                     ELSE 0
                 END) AS custo_dollar,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                     ELSE 0
                 END) AS custo_real,
                 SUM(cm.clicks_custoMkt) AS cliques
@@ -1261,13 +1261,13 @@ class marketing extends MRPHP
             SELECT
                 $chave AS form,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
                     ELSE 0
                 END) AS custo_dollar,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                     ELSE 0
                 END) AS custo_real,
                 SUM(cm.clicks_custoMkt) AS cliques
@@ -2033,13 +2033,13 @@ class marketing extends MRPHP
         $sql = "
             SELECT YEAR(cm.data_custoMkt) AS y, MONTH(cm.data_custoMkt) AS m,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
                     ELSE 0
                 END) AS custo_dollar,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                     ELSE 0
                 END) AS custo_real
             FROM custoMkt cm
@@ -2738,13 +2738,13 @@ class marketing extends MRPHP
         $sql = "
             SELECT DATE(cm.data_custoMkt) AS dia,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'meta' THEN cm.valor_custoMkt
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt IN ('Dollar 1', 'Dollar 2') THEN cm.valor_custoMkt
                     ELSE 0
                 END) AS custo_dollar,
                 SUM(CASE
-                    WHEN YEAR(cm.data_custoMkt) = 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
-                    WHEN YEAR(cm.data_custoMkt) = 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) <= 2025 AND cm.origem_custoMkt = 'google' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
+                    WHEN YEAR(cm.data_custoMkt) >= 2026 AND cm.conta_custoMkt <> 'Dollar 1' AND cm.conta_custoMkt <> 'Dollar 2' THEN cm.valor_custoMkt / NULLIF(ca.valor_cambio, 0)
                     ELSE 0
                 END) AS custo_real
             FROM custoMkt cm

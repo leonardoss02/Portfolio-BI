@@ -174,6 +174,36 @@ return [
         'indicacoes' => ['IND Clientes', 'F&F', 'MGM'],
     ],
 
+    // -------------------------------------------------------------------------
+    // Leads
+    // -------------------------------------------------------------------------
+    'leads' => [
+        // Leads num dia de peso 1 (o calendário aumenta ou diminui).
+        'porDia' => 36,
+        // Canal de origem (pesos).
+        'canais' => ['evento' => 45, 'digital' => 40, 'organico' => 8, 'indicacao' => 7],
+        'chanceQualificado' => 0.45,
+        // Dos não qualificados, quantos são descartados com motivo.
+        'chanceDescarteNaoQualificado' => 0.25,
+        'chanceAfiliado' => 0.08,
+        // No digital, parte dos leads vai para a Helena Castro (vendedora com painel próprio).
+        'chanceHelenaNoDigital' => 0.25,
+        // Tipo de lead por canal (pesos). "(nulo)" vira NULL no banco.
+        'tipoLeadPorCanal' => [
+            'evento' => ['OTR' => 90, 'OTW' => 10],
+            'digital' => ['Consulta' => 70, 'Venda direta' => 12, 'B2B' => 12, '' => 3, '(nulo)' => 3],
+            'organico' => ['Consulta' => 100],
+            'indicacao' => ['Indicação' => 100],
+        ],
+        'profissoes' => [
+            'Engenheiro(a)', 'Médico(a)', 'Advogado(a)', 'Analista de sistemas', 'Administrador(a)',
+            'Enfermeiro(a)', 'Professor(a)', 'Empresário(a)', 'Contador(a)', 'Arquiteto(a)',
+            'Dentista', 'Designer',
+        ],
+        'temposExperiencia' => ['1 a 3 anos', '3 a 5 anos', '5 a 10 anos', '10 anos ou mais'],
+        'formacoes' => ['Ensino médio', 'Graduação', 'Pós-graduação', 'Mestrado', 'Doutorado'],
+    ],
+
     // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.
     'cambio' => [
         'inicial' => 5.45,

@@ -47,6 +47,12 @@ final class Cards
         return self::inserir($ctx, array_merge($herdados, $campos));
     }
 
+    /** Card avulso, sem lead nem card de origem (ex.: segmento Dentistas). */
+    public static function novo(Contexto $ctx, array $card): int
+    {
+        return self::inserir($ctx, $card);
+    }
+
     private static function inserir(Contexto $ctx, array $card): int
     {
         foreach (['faseId_dealV2', 'fase_dealV2', 'criadoEm_dealV2'] as $obrigatorio) {

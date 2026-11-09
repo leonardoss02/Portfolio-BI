@@ -58,6 +58,7 @@ foreach ($entradas as $entrada) {
             $problema = 'JSON com erro: ' . json_encode($dados['error'] ?? $dados['erro'], JSON_UNESCAPED_UNICODE);
         } else {
             foreach ($entrada['exigir'] ?? [] as $caminho => $condicao) {
+                $caminho = (string) $caminho; // o PHP transforma a chave '0' em inteiro
                 $valor = valorNoCaminho($dados, $caminho);
                 $resumo .= " $caminho=" . resumirValor($valor);
                 if (!atende($valor, $condicao)) {

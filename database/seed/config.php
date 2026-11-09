@@ -267,6 +267,21 @@ return [
         'chanceCombo' => 0.20,
     ],
 
+    // -------------------------------------------------------------------------
+    // Segmento Dentistas (C33), existe desde 31/08/2026 (data fixa no código)
+    // -------------------------------------------------------------------------
+    'dentistas' => [
+        'inicio' => '2026-08-31',
+        'porDiaUtil' => 4,
+        'chanceCheckin' => 0.60,
+        'chanceConsulta' => 0.30,
+        // Das consultas realizadas, quantas viram contrato (≈10% do total).
+        'chanceContratoAposConsulta' => 0.35,
+        'cidades' => ['São Paulo', 'Curitiba', 'Belo Horizonte', 'Porto Alegre', 'Goiânia', 'Recife'],
+        'anuncios' => ['Vídeo implantodontia EUA', 'Carrossel validação de diploma', 'Depoimento dentista', 'Live encontro'],
+        'profissoes' => ['Cirurgião-dentista', 'Ortodontista', 'Implantodontista'],
+    ],
+
     // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.
     'cambio' => [
         'inicial' => 5.45,

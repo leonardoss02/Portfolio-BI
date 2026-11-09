@@ -5,7 +5,7 @@
  * Cada entrada:
  *   'url'    rota com placeholders: {ano} {mes} {hoje} {inicioMes} {ha29dias} {anoAnterior}
  *   'tipo'   'json' ou 'html'
- *   'exigir' (json) caminho no JSON => condição: '>0', '>=N', 'entre:A:B', 'naoVazio', '===false', 'contem:valor'
+ *   'exigir' (json) caminho no JSON => condição: '>0', '>=N', 'entre:A:B', 'naoVazio', '===false', '===true', 'contem:valor'
  *   'contem' (html) texto que a página precisa conter
  *   'grupo'  opcional; entradas com grupo só rodam com --apenas=grupo
  *
@@ -84,8 +84,9 @@ array_push($entradas,
     $json('/marketing/anuncios'),
 
     // Eventos
-    $json("/eventos/dados?$ano"),
-    $json('/eventos/preview'),
+    $json("/eventos/dados?$ano", ['totais.qt_eventos' => '>0']),
+    // Prévia: 2 eventos passados e o próximo, nessa ordem.
+    $json('/eventos/preview', ['eventos.1.is_proximo' => '===false', 'eventos.2.is_proximo' => '===true']),
     $json("/eventos/lista?$ano"),
 
     // Financeiro, Atendimento, Jurídico

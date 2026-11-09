@@ -106,4 +106,39 @@ return [
 
     // Vistos escolhidos nos combos
     'vistos' => ['EB-2 NIW', 'EB-5', 'E-2', 'L-1', 'O-1'],
+
+    // -------------------------------------------------------------------------
+    // Eventos e câmbio
+    // -------------------------------------------------------------------------
+    'eventos' => [
+        'primeiroSabado' => '2025-01-04',
+        // Os próximos eventos já existem (vendendo cadeira) até N dias à frente.
+        'diasFuturos' => 45,
+        'semanasSemRepetirCidade' => 8,
+        // Um webinar a cada 13 semanas; o 1:1 cai 6 semanas depois do webinar.
+        'intervaloWebinar' => 13,
+        'deslocamento1a1' => 6,
+        // Cidades do "On The Road" e a UF de cada uma. Todas existem em
+        // lib/hotel/cidades-legado.php (sem as grafias duplicadas sem acento).
+        'cidades' => [
+            'Alphaville' => 'SP', 'Rio de Janeiro' => 'RJ', 'Blumenau' => 'SC', 'São José dos Campos' => 'SP',
+            'Belo Horizonte' => 'MG', 'Sorocaba' => 'SP', 'Belém' => 'PA', 'Curitiba' => 'PR', 'Vitória' => 'ES',
+            'Jundiaí' => 'SP', 'São José do Rio Preto' => 'SP', 'Manaus' => 'AM', 'Porto Alegre' => 'RS',
+            'Goiânia' => 'GO', 'Uberlândia' => 'MG', 'Mogi das Cruzes' => 'SP', 'São Carlos' => 'SP',
+            'Londrina' => 'PR', 'Caxias do Sul' => 'RS', 'Palmas' => 'TO', 'Campo Grande' => 'MS', 'Natal' => 'RN',
+            'Porto Velho' => 'RO', 'Salvador' => 'BA', 'Florianópolis' => 'SC', 'Maringá' => 'PR',
+            'Ribeirão Preto' => 'SP', 'Fortaleza' => 'CE', 'Recife' => 'PE', 'Brasília' => 'DF', 'Joinville' => 'SC',
+            'Maceió' => 'AL', 'São Paulo' => 'SP', 'Balneário Camboriú' => 'SC', 'Cuiabá' => 'MT', 'Uberaba' => 'MG',
+            'Campinas' => 'SP', 'Santos' => 'SP', 'Juiz de Fora' => 'MG', 'Aracajú' => 'SE', 'Itajaí' => 'SC',
+            'Piracicaba' => 'SP', 'São Caetano do Sul' => 'SP', 'Guarulhos' => 'SP', 'Duque de Caxias' => 'RJ',
+        ],
+    ],
+
+    // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.
+    'cambio' => [
+        'inicial' => 5.45,
+        'minimo' => 5.20,
+        'maximo' => 5.90,
+        'passo' => 0.02,
+    ],
 ];

@@ -8,7 +8,9 @@
  */
 final class Gerador
 {
-    public const ETAPAS = [];
+    public const ETAPAS = [
+        'eventos' => [Eventos::class, 'gerar'],
+    ];
 
     /** Roda as etapas em ordem. Com $ate, para depois da etapa indicada. */
     public static function rodar(Contexto $ctx, ?string $ate = null): void

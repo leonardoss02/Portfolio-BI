@@ -129,6 +129,9 @@ function atende(mixed $valor, string $condicao): bool
     if ($condicao === '===false') {
         return $valor === false;
     }
+    if ($condicao === '===true') {
+        return $valor === true;
+    }
     if (str_starts_with($condicao, 'contem:')) {
         $alvo = substr($condicao, 7);
         return is_array($valor) && in_array($alvo, array_map('strval', array_values($valor)), true);

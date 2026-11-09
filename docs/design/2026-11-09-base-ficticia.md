@@ -68,6 +68,7 @@ docker-compose.yml
 docker/
   php/Dockerfile          php:8.3-apache + mysqli + mbstring + mod_rewrite
   app.env                 .env de demonstração (login demo/demo), montado read-only
+  app.dev.env             igual ao app.env, mas em modo DEV (usado só pelo teste de fumaça)
 database/
   README.md               modelo de dados explicado + diagrama ER (Mermaid)
   schema.sql              DDL das 18 tabelas, comentado
@@ -76,11 +77,18 @@ database/
     config.php            volumes, taxas, pessoas, sazonalidade (único lugar para ajustar)
     src/                  um arquivo por domínio de negócio:
       Aleatorio.php         sorteios determinísticos (semente fixa)
-      Calendario.php        janela de datas, sazonalidade, dias úteis
+      Calendario.php        janela de datas, sazonalidade, horários
+      Base.php              as tabelas em memória antes de gravar
+      Contexto.php          o que toda etapa recebe (hoje, sorteio, config, base)
+      Gerador.php           a ordem das etapas
+      ConstantesDoCodigo.php lê constantes dos controllers (fonte única de nomes e IDs)
       Pessoas.php           equipe interna (nomes fixos no código) e clientes fictícios
       Eventos.php           eventos presenciais e câmbio
       Marketing.php         campanhas, conjuntos, anúncios e custos
-      FunilComercial.php    a jornada do cliente: leads e cards do CRM
+      Leads.php             leads e contatos
+      VendaConsulta.php     cadeiras (C9), check-in e consulta no evento, consulta digital (C11)
+      Comercial2.php        Comercial 2 (C5), retenção (C1), combos C29/C31, Serasa
+      Dentistas.php         segmento Dentistas (C33)
       Financeiro.php        faturas
       PosVenda.php          pós-venda C3, jurídico, tarefas, orçamentos e campanha de metas
       Atendimento.php       conversas e mensagens do Chatwoot
@@ -93,7 +101,7 @@ tests/
   smoke.php               chama todos os endpoints e confere se há números
 docs/
   design/                 esta spec
-  prints/                 PNGs das telas + capturar.php (ferramenta de quem mantém)
+  prints/                 PNGs das telas + capturar.ps1 (ferramenta de quem mantém)
 .gitattributes            força LF nos arquivos que vão para o container
 ```
 
@@ -124,7 +132,9 @@ O código do repositório é montado no container (bind mount), e o `docker/app.
   - `DASH_AUTH_USER=demo` e `DASH_AUTH_PASSWORD=demo`;
   - `DB_DEFAULT_*` apontando para o `db`;
   - `DB_2_*` apontando para o mesmo banco, porque a página inicial faz `SHOW TABLES` nas duas conexões.
-- **Teste de fumaça em modo DEV.** O smoke test roda com `APP_ENV=DEV`, porque nesse modo qualquer warning do PHP vira erro e aparece no teste.
+- **Teste de fumaça em modo DEV.** O smoke test roda com `APP_ENV=DEV`, porque nesse modo qualquer warning do PHP vira erro e aparece no teste. O compose escolhe o arquivo pela variável `APP_ENV_FILE`, cujo padrão é `docker/app.env`. Para o teste se usa `APP_ENV_FILE=./docker/app.dev.env`.
+- **Portas configuráveis.** O padrão é `8000` (app) e `3307` (banco), e as variáveis `APP_PORTA` e `DB_PORTA` trocam as duas. Assim, quem já tem algo rodando nessas portas não fica travado.
+- **Imagens multi-arquitetura** (`php:8.3-apache` e `mariadb:11.4`), que rodam também em Macs com chip Apple.
 - **PHP puro, sem Composer**, igual ao resto do projeto. Nenhum script `.sh`.
 
 ### 4.3 Sem Docker
@@ -220,30 +230,35 @@ As chaves que ligam as tabelas de uma mesma pessoa:
 
 | Item | Quantidade |
 |---|---|
-| Leads | ~20 mil |
-| Cards no CRM (todas as pipelines) | ~12 mil |
-| Combos vendidos | ~1.500 |
-| Faturas | ~9 mil |
-| Conversas no Chatwoot / mensagens | ~8 mil / ~40 mil |
-| Tags da jornada | ~25 mil |
+| Leads | 20 a 30 mil |
+| Cadeiras vendidas | ~1.500 |
+| Consultas vendidas | 1.600 a 2.600 |
+| Combos vendidos | 380 a 600 |
+| Cards no CRM (todas as pipelines) | ~7 mil |
+| Faturas | ~5 mil |
+| Conversas no Chatwoot / mensagens | ~10 mil / ~60 mil |
+| Tags da jornada | ~30 mil |
 | Eventos | ~100, com ~6 fornecedores cada |
-| Linhas de custo de marketing | ~20 mil |
+| Linhas de custo de marketing | ~17 mil |
 | Respostas de NPS | ~1.500 |
 | Carteira da campanha de metas (CS) | ~430 clientes |
 
 A base completa fica na casa de 150 mil linhas.
+
+**A carteira da campanha de metas inclui clientes "legados".** Os combos dentro da janela não chegam a 430 antes de 18/05/2026. Por isso, o pós-venda completa a carteira com cards C3 de clientes que fecharam em 2024, antes da janela de dados, como numa empresa que já tinha clientes. Esses cards só aparecem na campanha de metas, porque os outros filtros de período começam em 2025.
 
 ### 6.4 Taxas e valores (todos em `config.php`)
 
 | Etapa | Taxa aproximada |
 |---|---|
 | Lead → qualificado | 45% |
-| Qualificado de evento → cadeira | 15% |
+| Qualificado de evento → cadeira | 30% |
 | Cadeira → check-in | 70% |
-| Check-in → consulta vendida | 25% |
+| Check-in → consulta vendida no evento | 35% |
+| Qualificado digital, orgânico ou indicação → consulta | 22% |
 | Consulta vendida → realizada | 85% |
-| Realizada → FP realizado | 50% |
-| FP → combo | 40% |
+| Realizada → FP agendado | 65% (e 85% dos agendados se realizam) |
+| FP realizado → combo | 50% |
 | Perdido no C5 → retenção (C1) | 30%, e 20% destes fecham `C1:WON` |
 
 Valores:
@@ -251,7 +266,7 @@ Valores:
 - **Combo:** US$ 15 a 25 mil líquidos (o código projeta com US$ 20 mil).
 - **Cadeira:** R$ 100.
 - **Consulta:** R$ 690.
-- **ROI por evento:** entre 3x e 8x.
+- **ROI médio dos eventos:** entre 2x e 6x. Eventos individuais variam, e alguns fecham sem combo nenhum.
 
 Cada etapa tem um prazo (dias entre consulta e FP, entre FP e contrato) e uma chance de parar. Quem para recebe uma fase de perda e um motivo de descarte, sorteado entre mais de 16 motivos para preencher o "Top 15 + Outros".
 
@@ -277,7 +292,7 @@ Para nenhum ramo do código ficar sem dado:
 - **Dentistas (`C33`):** só a partir de 31/08/2026, com `dentistaEvento`, `utmTerm`, `profissao` e `formacaoAcademica`.
 - **Jurídico e CS (`C3`):** todo combo gera um card C3 que avança por arquitetura, milestones, aplicados, RFE e aprovado, com case manager, ADVs e CSM.
 - **Campanha de metas (Liga do CS):**
-  - ~430 cards C3 das 4 CSMs (IDs `271`, `453`, `725`, `727`) criados antes de 18/05/2026.
+  - ~430 cards C3 das 4 CSMs (IDs `271`, `453`, `725`, `727`) criados antes de 18/05/2026, completados com clientes legados de 2024 (seção 6.3).
   - `dataJson_dealV2` com os 10 campos de produto, dos quais ~390 estão totalmente mapeados.
   - Orçamentos vendidos (`Vendido` + `APPROVED`) desde 18/05/2026 até a última semana, em BRL e USD.
 - **Retenção (`C1`):** time Comercial 3, com agendadas, realizadas, combos e descartes.
@@ -372,7 +387,7 @@ Se uma checagem falhar, ele para com uma mensagem clara e o `docker compose up` 
 ### 8.4 Prints
 
 - 8 telas no tema claro, a 1440 px de largura: Executivo, Comercial, Marketing, Eventos, Financeiro, Atendimento, Jornada do cliente e Gestão de Eventos.
-- Captura com Edge ou Chrome em modo headless, pelo script `docs/prints/capturar.php`.
+- Captura com Edge em modo headless, pelo script `docs/prints/capturar.ps1`. É PowerShell porque o Edge já vem no Windows e a máquina de quem mantém o projeto não tem PHP fora do Docker.
 - Os PNGs ficam commitados em `docs/prints/`. O visitante não precisa rodar o script.
 
 ## 9. Legibilidade (requisito)
@@ -392,6 +407,7 @@ Se uma checagem falhar, ele para com uma mensagem clara e o `docker compose up` 
 | Strings comparadas em PHP (nomes, campanhas) não baterem byte a byte | Nomes vêm de uma única fonte (`config.php`), conferida contra o código pela checagem 8.3 |
 | Montar o `app.env` sobre o `.env` criar um arquivo vazio no repositório do host (comportamento do Docker no Windows) | Verificar na implementação. Se acontecer, copiar o código para dentro da imagem em vez de usar bind mount |
 | Edge headless não aceitar login embutido na URL para os prints | Usar Playwright via `npx`, como ferramenta só de quem mantém o projeto |
+| Clone no Windows converter `.env`, `.sql` e `.php` para CRLF | `.gitattributes` com `eol=lf` |
 | Cache em `.mrphp/cache` mostrar números antigos depois de regerar | O `seed` limpa o cache sempre |
 | Geração passar de 30 segundos | Inserção em lote (`INSERT` com várias linhas) dentro de transação |
 

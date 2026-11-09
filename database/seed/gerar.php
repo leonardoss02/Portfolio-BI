@@ -30,9 +30,15 @@ echo "Gerando dados fictícios até {$hoje} (escala {$config['escala']})...\n";
 
 $ctx = Contexto::criar($hoje, $config);
 Gerador::rodar($ctx);
+echo Verificacao::resumo($ctx->base), "\n";
 
-foreach ($ctx->base->tabelas() as $tabela) {
-    printf("  %-18s %8d linhas\n", $tabela, $ctx->base->total($tabela));
+$falhas = Verificacao::checar($ctx);
+if ($falhas) {
+    foreach ($falhas as $falha) {
+        echo "✘ $falha\n";
+    }
+    echo "A base não foi gravada. Corrija o gerador ou rode `docker compose up --build` de novo.\n";
+    exit(1);
 }
 
 if (!isset($opcoes['sem-banco'])) {

@@ -1,0 +1,4 @@
+# Força LF: dentro do container (Linux), CRLF quebraria .env e scripts.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

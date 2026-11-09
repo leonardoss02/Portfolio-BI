@@ -13,6 +13,7 @@ GEMINI.md
 
 # Arquivos de banco de dados
 *.sql
+!database/schema.sql
 
 # Uploads gerados
 uploads/

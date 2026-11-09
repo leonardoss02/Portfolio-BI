@@ -1,0 +1,49 @@
+# Sobe o projeto com dados fictícios: docker compose up
+#
+#   db    MariaDB em memória (nada é guardado entre subidas)
+#   seed  recria as tabelas, gera os dados até hoje e encerra
+#   app   Apache em http://localhost:8000 (login demo / demo), sobe depois do seed
+#
+# Portas ocupadas? APP_PORTA=8080 DB_PORTA=3308 docker compose up
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: acme_bi
+      MARIADB_USER: acme
+      MARIADB_PASSWORD: acme
+      MARIADB_ROOT_PASSWORD: acme-root
+      TZ: America/Sao_Paulo
+    tmpfs:
+      - /var/lib/mysql
+    ports:
+      - "${DB_PORTA:-3307}:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  seed:
+    image: portfolio-bi/php
+    build: docker/php
+    command: php -d memory_limit=1024M database/seed/gerar.php
+    volumes:
+      - ./:/var/www/html
+      - ${APP_ENV_FILE:-./docker/app.env}:/var/www/html/.env:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    image: portfolio-bi/php
+    build: docker/php
+    ports:
+      - "${APP_PORTA:-8000}:80"
+    volumes:
+      - ./:/var/www/html
+      - ${APP_ENV_FILE:-./docker/app.env}:/var/www/html/.env:ro
+    depends_on:
+      seed:
+        condition: service_completed_successfully

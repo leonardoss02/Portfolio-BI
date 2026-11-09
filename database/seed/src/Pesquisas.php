@@ -40,7 +40,7 @@ final class Pesquisas
                 $resposta = [
                     'idEvento_npsEvento' => $id,
                     'tipo_npsEvento' => $comprou ? 'comprou' : 'nao_comprou',
-                    'respondidoEm_npsEvento' => min($ctx->calendario->momento($data->modify('+' . $s->inteiro(0, 3) . ' days'), $s), $ctx->hoje->setTime(23, 59)),
+                    'respondidoEm_npsEvento' => min($ctx->calendario->momento($data->modify('+' . $s->inteiro(0, 3) . ' days'), $s), $ctx->agora),
                     'nome_npsEvento' => Pessoas::novoCliente($ctx)['nome'],
                     'cidade_npsEvento' => $evento['cidade_evento'],
                 ];

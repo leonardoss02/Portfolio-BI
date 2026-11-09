@@ -336,7 +336,7 @@ return [
 
     // Faturas (USD)
     'financeiro' => [
-        'chancePaga' => 0.75,
+        'chancePaga' => 0.88,
         'chancePagaComAtraso' => 0.10,
         'chanceCongelada' => 0.08,
         'proporcaoSemCard' => 0.28,

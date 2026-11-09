@@ -36,6 +36,23 @@ return [
         afirmarIgual(678, count($dias), 'quantidade de dias');
     },
 
+    'momento() nunca passa de agora' => function () {
+        $config = require dirname(__DIR__, 2) . '/database/seed/config.php';
+        $agora = new DateTimeImmutable('2026-11-09 10:30:00');
+        $c = new Calendario(new DateTimeImmutable($config['inicio']), new DateTimeImmutable('2026-11-09'), $config['calendario'], $agora);
+        $s = new Aleatorio(2026);
+        for ($i = 0; $i < 300; $i++) {
+            $m = $c->momento(new DateTimeImmutable('2026-11-09'), $s);
+            afirmar($m <= $agora, 'horário depois de agora: ' . $m->format('H:i'));
+            afirmarIgual('2026-11-09', $m->format('Y-m-d'));
+        }
+    },
+
+    'sem agora informado, o limite é o fim do dia de hoje' => function () {
+        $ctx = Contexto::criar('2026-11-09', require dirname(__DIR__, 2) . '/database/seed/config.php');
+        afirmarIgual('2026-11-09 23:59:59', $ctx->agora->format('Y-m-d H:i:s'));
+    },
+
     'momento() fica entre 08:00 e 21:59 do mesmo dia' => function () {
         $c = calendarioDeTeste();
         $s = new Aleatorio(2026);

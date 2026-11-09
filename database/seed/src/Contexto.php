@@ -21,9 +21,14 @@ final class Contexto
         public readonly Calendario $calendario,
         public readonly array $config,
         public readonly Base $base,
+        public readonly DateTimeImmutable $agora,
     ) {}
 
-    public static function criar(string $hoje, array $config): self
+    /**
+     * $agora limita os horários de hoje. Sem ele (testes), vale o fim do dia;
+     * o gerar.php passa a hora real quando a data é hoje.
+     */
+    public static function criar(string $hoje, array $config, ?DateTimeImmutable $agora = null): self
     {
         $dataHoje = DateTimeImmutable::createFromFormat('!Y-m-d', $hoje);
         if ($dataHoje === false) {
@@ -32,12 +37,14 @@ final class Contexto
         if ($hoje < self::HOJE_MINIMO) {
             throw new InvalidArgumentException("A data de hoje precisa ser a partir de " . self::HOJE_MINIMO . ".");
         }
+        $agora ??= $dataHoje->setTime(23, 59, 59);
         return new self(
             $dataHoje,
             new Aleatorio($config['semente']),
-            new Calendario(new DateTimeImmutable($config['inicio']), $dataHoje, $config['calendario']),
+            new Calendario(new DateTimeImmutable($config['inicio']), $dataHoje, $config['calendario'], $agora),
             $config,
             new Base(),
+            $agora,
         );
     }
 

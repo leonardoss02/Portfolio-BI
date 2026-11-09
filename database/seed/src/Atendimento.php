@@ -30,7 +30,7 @@ final class Atendimento
         foreach ($ctx->base->linhas('leadV2') as $id => $lead) {
             if ($s->chance($cfg['chanceConversa'])) {
                 $inicio = $lead['dataUltForm_leadV2']->modify('+' . $s->inteiro(0, 120) . ' minutes');
-                self::conversa($ctx, $lead, min($inicio, $ctx->hoje->setTime(23, 59, 59)), array_keys($vendas[$id] ?? []));
+                self::conversa($ctx, $lead, min($inicio, $ctx->agora), array_keys($vendas[$id] ?? []));
             }
         }
 
@@ -50,7 +50,7 @@ final class Atendimento
         $resposta = match (true) {
             !$doTime && $s->chance($cfg['chanceSemResposta']) => null,
             !$doTime && $s->chance($cfg['chanceSentinela']) => self::SEM_RESPOSTA,
-            default => $criadaEm->modify('+' . $s->inteiro(1, 240) . ' minutes'),
+            default => min($criadaEm->modify('+' . $s->inteiro(1, 240) . ' minutes'), $ctx->agora),
         };
         if ($s->chance(0.15)) {
             $rotulos[] = 'lead-quente';
@@ -67,7 +67,7 @@ final class Atendimento
             'telefoneRemetenteMeta_conversaCW' => $lead['telefoneTexto_leadV2'],
             'criadoEm_conversaCW' => $criadaEm,
             'primeiraRespostaEm_conversaCW' => $resposta,
-            'ultimaAtividadeEm_conversaCW' => min($criadaEm->modify('+' . $s->inteiro(1, 72) . ' hours'), $ctx->hoje->setTime(23, 59, 59)),
+            'ultimaAtividadeEm_conversaCW' => min($criadaEm->modify('+' . $s->inteiro(1, 72) . ' hours'), $ctx->agora),
         ]);
 
         // Mensagens: a primeira é sempre do cliente na maioria das conversas.
@@ -77,7 +77,7 @@ final class Atendimento
             $ctx->base->inserir('msgCW', [
                 'id_conversaCW' => $id,
                 'tipo_msgCW' => $recebida ? $s->um(['incoming', '0']) : $s->um(['outgoing', '1']),
-                'criadoEm_msgCW' => $criadaEm->modify("+$i minutes"),
+                'criadoEm_msgCW' => min($criadaEm->modify("+$i minutes"), $ctx->agora),
             ]);
         }
     }

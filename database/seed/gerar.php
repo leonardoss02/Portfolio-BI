@@ -23,12 +23,15 @@ $config = require __DIR__ . '/config.php';
 if (isset($opcoes['escala'])) {
     $config['escala'] = (float) $opcoes['escala'];
 }
-$hoje = $opcoes['hoje'] ?? (new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo')))->format('Y-m-d');
+$agoraReal = new DateTimeImmutable('now', new DateTimeZone('America/Sao_Paulo'));
+$hoje = $opcoes['hoje'] ?? $agoraReal->format('Y-m-d');
+// Gerando para hoje: nenhum horário passa da hora atual. Para outra data, vale o fim daquele dia.
+$agora = $hoje === $agoraReal->format('Y-m-d') ? new DateTimeImmutable($agoraReal->format('Y-m-d H:i:s')) : null;
 
 $inicio = microtime(true);
 echo "Gerando dados fictícios até {$hoje} (escala {$config['escala']})...\n";
 
-$ctx = Contexto::criar($hoje, $config);
+$ctx = Contexto::criar($hoje, $config, $agora);
 Gerador::rodar($ctx);
 echo Verificacao::resumo($ctx->base), "\n";
 

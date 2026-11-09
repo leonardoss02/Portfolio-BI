@@ -69,7 +69,7 @@ final class Jornada
             $tags[] = ['webinar-assistido', $inicio->modify('-' . $s->inteiro(1, 10) . ' days'), 'Webinar Imigração'];
         }
 
-        $limite = $ctx->hoje->setTime(23, 59, 59);
+        $limite = $ctx->agora;
         foreach ($tags as [$tag, $quando, $descricao]) {
             if ($quando <= $limite) {
                 $ctx->base->inserir('lead_tag', [

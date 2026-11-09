@@ -9,13 +9,18 @@
  */
 final class Calendario
 {
+    /** Nenhum horário gerado passa daqui (por padrão, o fim do dia de hoje). */
+    private DateTimeImmutable $agora;
+
     public function __construct(
         private DateTimeImmutable $inicio,
         private DateTimeImmutable $hoje,
         private array $config,
+        ?DateTimeImmutable $agora = null,
     ) {
         $this->inicio = $inicio->setTime(0, 0);
         $this->hoje = $hoje->setTime(0, 0);
+        $this->agora = $agora ?? $this->hoje->setTime(23, 59, 59);
     }
 
     public function inicio(): DateTimeImmutable
@@ -49,9 +54,16 @@ final class Calendario
         return $crescimento * $mes * $fimDeSemana;
     }
 
-    /** Um horário do dia, entre $horaMin:00 e $horaMax:59. */
+    /**
+     * Um horário do dia, entre $horaMin:00 e $horaMax:59. Hoje, nunca depois
+     * de "agora": a base não mostra lead ou conversa num horário que ainda não chegou.
+     */
     public function momento(DateTimeImmutable $dia, Aleatorio $s, int $horaMin = 8, int $horaMax = 21): DateTimeImmutable
     {
-        return $dia->setTime($s->inteiro($horaMin, $horaMax), $s->inteiro(0, 59), $s->inteiro(0, 59));
+        $momento = $dia->setTime($s->inteiro($horaMin, $horaMax), $s->inteiro(0, 59), $s->inteiro(0, 59));
+        if ($momento > $this->agora) {
+            $momento = max($this->agora->modify('-' . $s->inteiro(0, 59) . ' minutes'), $dia->setTime(0, 0));
+        }
+        return $momento;
     }
 }

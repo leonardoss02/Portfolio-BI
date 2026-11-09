@@ -17,19 +17,6 @@ class consultacom2 extends MRPHP
     private const BITRIX_BASE = 'https://exemplo.bitrix24.com.br/crm/deal/details/';
 
     /**
-     * Planilha do time (Google Sheets) com os clientes já conferidos.
-     *
-     * A URL /gviz/tq?tqx=out:csv responde 200 direto — /export?format=csv
-     * devolve 307 pra googleusercontent. Depende do compartilhamento por link
-     * seguir aberto; se cair, carregarPlanilha() degrada sem quebrar a tela.
-     *
-     * Usa sheet=NomeDaAba em vez de gid=N — a aba é trocada manualmente todo
-     * mês (era "Agosto", agora "Setembro") e o nome é mais fácil de manter
-     * correto do que descobrir o gid numérico de cada aba nova.
-     */
-    private const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA_CONSULTAS/gviz/tq?tqx=out:csv&sheet=Setembro';
-
-    /**
      * Fase de consulta. LIKE 'C5:%' em vez do LEFT(faseId_dealV2,2) = 'C5' que
      * o CLAUDE.md documenta: existem categorias de dois dígitos (C11, C15,
      * C29, C31), então o LEFT casaria um futuro C50-C59. Hoje as 17 fases C5
@@ -99,23 +86,9 @@ class consultacom2 extends MRPHP
     // ===================================================================
 
     private const CACHE_TTL_DADOS    = 600;
-    private const CACHE_TTL_PLANILHA = 600;
-    private const CACHE_TTL_FALHA    = 60;
     /** Lista de vendedores da aba Eventos: nao depende de filtro, so muda
      *  quando entra vendedor novo no C5 — chave fixa e TTL longo. */
     private const CACHE_TTL_RESPONSAVEIS = 21600;
-
-    /**
-     * $escape do fgetcsv, sempre explícito.
-     *
-     * O PHP 8.4 (versão do servidor) emite deprecation quando o parâmetro é
-     * omitido, e o configurarErros() do mrphp.php transforma qualquer
-     * deprecation em ErrorException — ou seja, omitir vira HTTP 500 em
-     * produção. String vazia é o valor que o PHP vai adotar como padrão e é o
-     * correto para CSV RFC 4180 como o do Google, que escapa aspas dobrando-as
-     * ("") em vez de usar barra invertida.
-     */
-    private const CSV_ESCAPE = '';
 
     /**
      * Rótulo de quem só casou pelo nome, não pelo e-mail.
@@ -244,7 +217,7 @@ class consultacom2 extends MRPHP
         $params = array_merge($filtroData['params'], $filtroEquipe['params']);
         $rows   = $this->queryAll($sql, $params);
 
-        // Cruzamento com a planilha é em memória — o CSV já está carregado,
+        // Cruzamento com a planilha é em memória — as linhas já estão carregadas,
         // não custa query. Sem planilha o status fica null e a view mostra "—"
         // em vez de marcar todo mundo como Pendente.
         //
@@ -628,8 +601,7 @@ class consultacom2 extends MRPHP
                 'email'             => $l['email'],
                 'data_consulta'     => $l['data_consulta'],
                 // Data que o CRM registra pro deal que casou. Fica lado a lado
-                // com a da planilha, que vem como texto e sem ano ("seg.,
-                // 03/ago."), pra dar pra conferir divergência no olho.
+                // com a da planilha, pra dar pra conferir divergência no olho.
                 'data_consulta_crm' => $deal ? $this->fmtDataOuNull($deal['data_consulta_realizada']) : null,
                 'nome_comercial'    => $l['nome_comercial'],
                 'obs'               => $l['obs'],
@@ -755,174 +727,49 @@ class consultacom2 extends MRPHP
     }
 
     // ===================================================================
-    // PLANILHA DO TIME (Google Sheets -> CSV)
+    // PLANILHA DO TIME (tabela planilhaConsulta)
     // ===================================================================
 
     /**
-     * Baixa e parseia a planilha, com cache próprio de chave fixa — é a mesma
-     * planilha pra qualquer combinação de filtro, então não entra na chave por
-     * query string.
-     *
-     * Degrada em vez de quebrar: se o download falhar, reaproveita o último CSV
-     * bom mesmo vencido; sem nenhum cache, devolve indisponivel=true pra quem
-     * chama mostrar "—" em vez de marcar a base inteira como Pendente. Falha
-     * nunca vira cache.
+     * Linhas da planilha em que o time anota as consultas realizadas. As
+     * chaves normalizadas (nome_norm, email_norm) são calculadas aqui, para o
+     * cruzamento com o CRM em memória. Sem linhas, indisponivel=true faz quem
+     * chama mostrar "—" em vez de marcar a base inteira como Pendente.
      *
      * @return array{linhas: array<int, array<string, string>>, indisponivel: bool}
      */
     private function carregarPlanilha(): array
     {
-        $cacheKey = 'consultacom2_planilha';
-
-        $cached = $this->cacheGet($cacheKey, self::CACHE_TTL_PLANILHA);
-        if ($cached !== null) {
-            return ['linhas' => $cached, 'indisponivel' => false];
-        }
-
-        // Marcador de falha recente: sem ele, enquanto o Google estivesse fora
-        // do ar toda requisição pagaria os 15s de timeout do cURL. 60s é curto
-        // o bastante pra recuperar sozinho logo que o acesso voltar.
-        $falhouAgora = $this->cacheGet($cacheKey . '_falha', self::CACHE_TTL_FALHA) !== null;
-
-        $linhas = [];
-        if (!$falhouAgora) {
-            $csv    = $this->baixarCsv(self::SHEET_CSV_URL);
-            $linhas = $csv === null ? [] : $this->parsePlanilhaCsv($csv);
-        }
-
-        if (!$linhas) {
-            if (!$falhouAgora) {
-                $this->cacheSet($cacheKey . '_falha', time());
-            }
-            $stale = $this->cacheGet($cacheKey, PHP_INT_MAX);
-            if ($stale !== null) {
-                error_log('[consultacom2/planilha] download falhou — usando cache vencido');
-                return ['linhas' => $stale, 'indisponivel' => false];
-            }
-            return ['linhas' => [], 'indisponivel' => true];
-        }
-
-        $this->cacheSet($cacheKey, $linhas);
-        return ['linhas' => $linhas, 'indisponivel' => false];
-    }
-
-    /** Baixa o CSV; null em qualquer falha (rede, status != 200 ou corpo HTML). */
-    private function baixarCsv(string $url): ?string
-    {
-        if (!function_exists('curl_init')) {
-            error_log('[consultacom2/planilha] cURL indisponível neste servidor');
-            return null;
-        }
-
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS      => 5,
-            CURLOPT_CONNECTTIMEOUT => 8,
-            CURLOPT_TIMEOUT        => 15,
-            CURLOPT_USERAGENT      => 'AcmeEUA-BI/1.0',
-        ]);
-        $raw    = curl_exec($ch);
-        $errno  = curl_errno($ch);
-        $err    = curl_error($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($errno !== 0 || $raw === false) {
-            error_log('[consultacom2/planilha] erro cURL: ' . $err);
-            return null;
-        }
-        if ((int)$status !== 200) {
-            error_log('[consultacom2/planilha] Google respondeu status ' . $status);
-            return null;
-        }
-        // Compartilhamento revogado? O Google devolve HTML de login. Parsear
-        // isso como CSV marcaria a planilha inteira como "Pendente".
-        $inicio = ltrim($raw);
-        if ($inicio === '' || $inicio[0] === '<') {
-            error_log('[consultacom2/planilha] resposta nao e CSV (acesso ao link revogado?)');
-            return null;
-        }
-        return $raw;
-    }
-
-    /**
-     * CSV -> linhas normalizadas. As colunas são localizadas pelo nome do
-     * cabeçalho (não pela posição), pra sobreviver a reordenação na planilha;
-     * a ordem original fica como fallback.
-     */
-    private function parsePlanilhaCsv(string $csv): array
-    {
-        $fp = fopen('php://temp', 'r+');
-        if ($fp === false) {
-            error_log('[consultacom2/planilha] nao foi possivel abrir php://temp');
-            return [];
-        }
-        fwrite($fp, $csv);
-        rewind($fp);
-
-        $header = fgetcsv($fp, 0, ',', '"', self::CSV_ESCAPE);
-        if (!$header) {
-            fclose($fp);
-            return [];
-        }
-
-        $porTitulo = [
-            'nome do cliente'            => 'nome_cliente',
-            'e-mail'                     => 'email',
-            'email'                      => 'email',
-            'data da consulta realizada' => 'data_consulta',
-            'nome comercial'             => 'nome_comercial',
-            'obs'                        => 'obs',
-        ];
-        $ordemPadrao = ['nome_cliente', 'email', 'data_consulta', 'nome_comercial', 'obs'];
-
-        $idx = [];
-        foreach ($header as $i => $titulo) {
-            $chave = $porTitulo[$this->normalizarTexto((string)$titulo)] ?? ($ordemPadrao[$i] ?? null);
-            if ($chave !== null && !isset($idx[$chave])) {
-                $idx[$chave] = $i;
-            }
-        }
-        if (!isset($idx['email'])) {
-            fclose($fp);
-            error_log('[consultacom2/planilha] coluna de e-mail nao encontrada no cabecalho');
-            return [];
-        }
-
-        $campo = function (array $cols, string $chave) use ($idx): string {
-            return isset($idx[$chave]) ? trim((string)($cols[$idx[$chave]] ?? '')) : '';
-        };
+        $resultado = $this->db->query(
+            "SELECT nomeCliente_planilhaConsulta   AS nome,
+                    email_planilhaConsulta         AS email,
+                    dataConsulta_planilhaConsulta  AS data,
+                    nomeComercial_planilhaConsulta AS comercial,
+                    obs_planilhaConsulta           AS obs
+               FROM planilhaConsulta
+              WHERE email_planilhaConsulta LIKE '%@%'
+              ORDER BY dataConsulta_planilhaConsulta DESC, id_planilhaConsulta"
+        );
 
         $linhas = [];
-        while (($cols = fgetcsv($fp, 0, ',', '"', self::CSV_ESCAPE)) !== false) {
-            $email = $campo($cols, 'email');
-            // Exige o '@': se o cabeçalho não bateu e o fallback posicional
-            // pegou a coluna errada, é aqui que o CSV alheio morre em vez de
-            // virar 117 'Pendente' silenciosos.
-            if ($email === '' || strpos($email, '@') === false) {
-                continue;
-            }
-            $nomeCliente = $campo($cols, 'nome_cliente');
+        while ($r = $resultado->fetch_assoc()) {
             $linhas[] = [
-                'nome_cliente'   => $nomeCliente,
-                'nome_norm'      => $this->nomeNorm($nomeCliente),
-                'email'          => $email,
-                'email_norm'     => $this->emailNorm($email),
-                'data_consulta'  => $campo($cols, 'data_consulta'),
-                'nome_comercial' => $campo($cols, 'nome_comercial'),
-                'obs'            => $campo($cols, 'obs'),
+                'nome_cliente'   => (string)$r['nome'],
+                'nome_norm'      => $this->nomeNorm($r['nome']),
+                'email'          => (string)$r['email'],
+                'email_norm'     => $this->emailNorm($r['email']),
+                'data_consulta'  => $r['data'] ? date('d/m/Y', strtotime($r['data'])) : '',
+                'nome_comercial' => (string)$r['comercial'],
+                'obs'            => (string)$r['obs'],
             ];
         }
-        fclose($fp);
 
-        return $linhas;
+        return ['linhas' => $linhas, 'indisponivel' => !$linhas];
     }
 
     /**
-     * Texto -> minúsculo, sem acento e com espaço colapsado. Usado tanto pro
-     * cabeçalho do CSV quanto como chave de cruzamento de nome.
+     * Texto -> minúsculo, sem acento e com espaço colapsado. Usado como chave
+     * de cruzamento de nome entre a planilha e o CRM.
      *
      * Sem mb_*: nada garante que o servidor tenha a extensão mbstring (o resto
      * do projeto só usa mb_strlen em caminhos que dashboard nenhum executa). O

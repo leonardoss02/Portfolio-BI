@@ -57,13 +57,15 @@ foreach ($entradas as $entrada) {
         } elseif (!empty($dados['error']) || !empty($dados['erro'])) {
             $problema = 'JSON com erro: ' . json_encode($dados['error'] ?? $dados['erro'], JSON_UNESCAPED_UNICODE);
         } else {
-            foreach ($entrada['exigir'] ?? [] as $caminho => $condicao) {
+            foreach ($entrada['exigir'] ?? [] as $caminho => $condicoes) {
                 $caminho = (string) $caminho; // o PHP transforma a chave '0' em inteiro
                 $valor = valorNoCaminho($dados, $caminho);
                 $resumo .= " $caminho=" . resumirValor($valor);
-                if (!atende($valor, $condicao)) {
-                    $problema = "$caminho não atende '$condicao' (valor: " . resumirValor($valor) . ')';
-                    break;
+                foreach ((array) $condicoes as $condicao) {
+                    if (!atende($valor, $condicao)) {
+                        $problema = "$caminho não atende '$condicao' (valor: " . resumirValor($valor) . ')';
+                        break 2;
+                    }
                 }
             }
         }
@@ -103,16 +105,22 @@ function requisitar(string $url): array
     return [$status, $corpo === false ? '' : $corpo];
 }
 
-function valorNoCaminho(array $dados, string $caminho): mixed
+/** Caminho com pontos ('kpis.leads'); '*' percorre uma lista ('linhas.*.status' devolve todos os status). */
+function valorNoCaminho(mixed $dados, string $caminho): mixed
 {
-    $atual = $dados;
-    foreach (explode('.', $caminho) as $parte) {
-        if (!is_array($atual) || !array_key_exists($parte, $atual)) {
+    $partes = explode('.', $caminho);
+    $parte = array_shift($partes);
+    if ($parte === '*') {
+        if (!is_array($dados)) {
             return null;
         }
-        $atual = $atual[$parte];
+        $resto = implode('.', $partes);
+        return array_map(fn($item) => $resto === '' ? $item : valorNoCaminho($item, $resto), array_values($dados));
     }
-    return $atual;
+    if (!is_array($dados) || !array_key_exists($parte, $dados)) {
+        return null;
+    }
+    return $partes ? valorNoCaminho($dados[$parte], implode('.', $partes)) : $dados[$parte];
 }
 
 function atende(mixed $valor, string $condicao): bool

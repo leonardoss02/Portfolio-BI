@@ -343,8 +343,8 @@ html.dark .dash-npseventos { --nps-ex: #818cf8; }
 <script>
 // ══════════════════════════════════════════════════════════════
 //  NPS Eventos — Dashboard JS
-//  Consome: npseventos/dados (controller MRPHP, sem consulta ao MySQL —
-//  fonte são duas planilhas Google Sheets, ver controle/npseventos_controle.php)
+//  Consome: npseventos/dados (controller MRPHP; as respostas vêm da
+//  tabela npsEvento, ver controle/npseventos_controle.php)
 //
 //  createMultiDropdown, createSearchDropdown, initFiltersToggle, fNum são
 //  fornecidas por js/bi-dashboard.js (carregado no <head> pelo template).

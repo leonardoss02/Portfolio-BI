@@ -18,11 +18,11 @@
         <h2 class="dic-section-title">Fontes de dados</h2>
         <dl class="dic-list">
           <div class="dic-def">
-            <dt>Compradores de Consulta <code>planilha Google Sheets</code></dt>
+            <dt>Compradores de Consulta <code>tabela npsEvento</code></dt>
             <dd>Respostas da pesquisa pós-evento enviadas por quem comprou consulta no evento On The Road. Pergunta de indicação: "O quanto você indicaria a Acme-EUA para amigos ou familiares?".</dd>
           </div>
           <div class="dic-def">
-            <dt>Não Compradores <code>planilha Google Sheets</code></dt>
+            <dt>Não Compradores <code>tabela npsEvento</code></dt>
             <dd>Respostas de quem participou do evento mas não fechou a consulta. Pergunta de indicação diferente da anterior: "O quanto você indicaria o evento On The Road para um amigo ou familiar?". Também traz o motivo de não ter fechado e o interesse em imigrar após o evento.</dd>
           </div>
         </dl>
@@ -207,7 +207,7 @@
           </div>
           <div class="dic-def">
             <dt>Atualização dos números</dt>
-            <dd>As planilhas são lidas direto do Google Sheets e cada leitura fica guardada por <strong>10 minutos</strong>; o resultado de cada combinação de filtros também fica guardado por 10 minutos. Por isso uma resposta nova pode levar até cerca de 20 minutos para aparecer no painel.</dd>
+            <dd>O resultado de cada combinação de filtros fica guardado por <strong>10 minutos</strong>. Por isso uma resposta nova pode levar até 10 minutos para aparecer no painel.</dd>
           </div>
           <div class="dic-def">
             <dt>Planilha indisponível</dt>

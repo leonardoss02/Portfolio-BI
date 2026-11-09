@@ -5,7 +5,9 @@
  * Cada entrada:
  *   'url'    rota com placeholders: {ano} {mes} {hoje} {inicioMes} {inicioAno} {ha29dias} {anoAnterior}
  *   'tipo'   'json' ou 'html'
- *   'exigir' (json) caminho no JSON => condição: '>0', '>=N', 'entre:A:B', 'naoVazio', '===false', '===true', 'contem:valor'
+ *   'exigir' (json) caminho no JSON => condição (ou lista de condições): '>0', '>=N', 'entre:A:B',
+ *            'naoVazio', '===false', '===true', 'contem:valor'. No caminho, '*' percorre uma lista
+ *            ('linhas.*.status' = o status de cada linha).
  *   'contem' (html) texto que a página precisa conter
  *   'contemRegex' (html) expressão regular que a página precisa satisfazer
  *   'grupo'  opcional; entradas com grupo só rodam com --apenas=grupo
@@ -197,10 +199,20 @@ array_push($entradas,
     $json('/dentistas/utmterms', ['0' => 'naoVazio']),
     $json('/dentistas/profissoes', ['0' => 'naoVazio']),
     $json('/dentistas/formacoes', ['0' => 'naoVazio']),
-    $json("/npseventos/dados?$ano"),
-    $json("/consultacom2/dados?$anoMes", ['linhas' => 'naoVazio']),
+    $json("/npseventos/dados?$ano", [
+        'totalComprou' => '>0',
+        'totalNaoComprou' => '>0',
+        'indisponivel' => '===false',
+        'comprou.expGeral' => 'entre:0:10',
+    ]),
+    // Cruzamento com a planilha: precisa haver linhas que casam por e-mail, só pelo nome e pendentes.
+    $json("/consultacom2/dados?$anoMes", [
+        'linhas' => 'naoVazio',
+        'planilha_indisponivel' => '===false',
+        'linhas.*.status' => ['contem:OK', 'contem:OK (nome)', 'contem:Pendente'],
+    ]),
     $json("/consultacom2/dadoseventos?$anoMes", ['linhas' => 'naoVazio']),
-    $json('/consultacom2/dadosplanilha'),
+    $json('/consultacom2/dadosplanilha', ['linhas' => 'naoVazio', 'planilha_indisponivel' => '===false']),
 
     // Helena Castro e Jornada
     $json('/helenacastro/dados?data_inicio={ha29dias}&data_fim={hoje}', [

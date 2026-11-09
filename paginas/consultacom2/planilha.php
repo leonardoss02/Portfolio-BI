@@ -145,7 +145,7 @@
 //  ConsultaCom2 · aba Planilha — Dashboard JS
 //  Consome: consultacom2/dadosplanilha (controller MRPHP)
 //
-//  As linhas vêm da planilha do time no Google Sheets. "Status" responde a
+//  As linhas vêm da planilha do time (tabela planilhaConsulta). "Status" responde a
 //  uma pergunta só: este cliente aparece na aba Consultas? Ou seja, tem deal
 //  em fase C5, com data de consulta realizada preenchida, sob um vendedor do
 //  Comercial 2.

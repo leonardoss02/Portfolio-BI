@@ -3,30 +3,17 @@
 /**
  * Dashboard "NPS Eventos" — porte da medida DAX "Html_NPS" do Power BI.
  *
- * Cruza duas planilhas Google Sheets da pesquisa pós-evento "On The Road":
- * quem comprou consulta e quem não comprou. Sem nenhuma consulta ao MySQL —
- * a fonte é só as duas planilhas (mesmo padrão de leitura CSV de
- * consultacom2_controle.php, cache/JSON copiados daquele arquivo — cópia por
- * controller, sem trait compartilhado, é decisão deliberada do projeto).
+ * Cruza as respostas da pesquisa pós-evento "On The Road" (tabela
+ * npsEvento): quem comprou consulta e quem não comprou.
  *
- * As duas planilhas fazem perguntas de "indicação" diferentes entre si
+ * Os dois questionários fazem perguntas de "indicação" diferentes entre si
  * (compradores: "indicaria a Acme-EUA"; não compradores: "indicaria o
- * evento OTR") — por isso nunca são combinadas num único NPS, sempre dois
+ * evento OTR") — por isso nunca são combinados num único NPS, sempre dois
  * blocos separados (comprou/naoComprou).
  */
 class npseventos extends MRPHP
 {
-    private const SHEET_COMPROU_CSV_URL =
-        'https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA_NPS_1/gviz/tq?tqx=out:csv&gid=1581784259';
-    private const SHEET_NAO_COMPROU_CSV_URL =
-        'https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA_NPS_2/gviz/tq?tqx=out:csv&gid=1950299764';
-
     private const CACHE_TTL_DADOS    = 600;
-    private const CACHE_TTL_PLANILHA = 600;
-    private const CACHE_TTL_FALHA    = 60;
-
-    /** $escape do fgetcsv sempre explícito — ver nota em consultacom2_controle.php. */
-    private const CSV_ESCAPE = '';
 
     /** Thresholds do círculo de NPS (0-10), idênticos à medida DAX original. */
     private const NPS_CLASSE_EX   = 9;
@@ -279,271 +266,69 @@ class npseventos extends MRPHP
     }
 
     // ===================================================================
-    // PLANILHAS (Google Sheets -> CSV) — mesmo padrão de consultacom2_controle.php
+    // RESPOSTAS (tabela npsEvento)
     // ===================================================================
 
     private function carregarPlanilhaComprou(): array
     {
-        return $this->carregarPlanilhaGenerica(
-            'npseventos_comprou',
-            self::SHEET_COMPROU_CSV_URL,
-            fn($csv) => $this->parsePlanilhaComprouCsv($csv)
-        );
+        return $this->carregarRespostas('comprou');
     }
 
     private function carregarPlanilhaNaoComprou(): array
     {
-        return $this->carregarPlanilhaGenerica(
-            'npseventos_nao_comprou',
-            self::SHEET_NAO_COMPROU_CSV_URL,
-            fn($csv) => $this->parsePlanilhaNaoComprouCsv($csv)
-        );
+        return $this->carregarRespostas('nao_comprou');
     }
 
     /**
-     * Baixa e parseia uma planilha, com cache de chave fixa (não depende do
-     * filtro do usuário) e fallback em 3 níveis: cache normal, cache vencido
-     * (stale) se o download falhar, e marcador de falha de 60s para não pagar
-     * os 15s de timeout do cURL a cada request enquanto o Google está fora.
+     * Lê as respostas de um tipo ('comprou' ou 'nao_comprou') no formato que os
+     * cálculos acima esperam: timestamp (DateTime), nome, cidade, notas (float
+     * ou null) e textos. Os filtros de ano, mês e cidade continuam em memória,
+     * porque são poucas centenas de linhas.
      *
      * @return array{linhas: array<int, array<string, mixed>>, indisponivel: bool}
      */
-    private function carregarPlanilhaGenerica(string $cacheKey, string $url, callable $parser): array
+    private function carregarRespostas(string $tipo): array
     {
-        $cached = $this->cacheGet($cacheKey, self::CACHE_TTL_PLANILHA);
-        if ($cached !== null) {
-            return ['linhas' => $this->reidratarLinhas($cached), 'indisponivel' => false];
-        }
+        $campos = $tipo === 'comprou'
+            ? ['expGeral', 'local', 'coffee', 'palestrante', 'recepcao', 'brindes', 'abordagem', 'atendimento', 'indicacao', 'fatorFechamento']
+            : ['expGeral', 'local', 'coffee', 'palestrante', 'recepcao', 'brindes', 'abordagem', 'chanceImigrar', 'indicacao', 'motivoNaoFechou', 'interessePosEvento'];
+        $textos = ['fatorFechamento', 'motivoNaoFechou', 'interessePosEvento'];
 
-        $falhouAgora = $this->cacheGet($cacheKey . '_falha', self::CACHE_TTL_FALHA) !== null;
+        $colunas = implode(', ', array_map(fn($c) => "{$c}_npsEvento AS {$c}", $campos));
+        $stmt = $this->db->prepare(
+            "SELECT respondidoEm_npsEvento AS respondidoEm, nome_npsEvento AS nome, cidade_npsEvento AS cidade, {$colunas}
+               FROM npsEvento
+              WHERE tipo_npsEvento = ?
+              ORDER BY respondidoEm_npsEvento"
+        );
+        $stmt->bind_param('s', $tipo);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
 
         $linhas = [];
-        if (!$falhouAgora) {
-            $csv    = $this->baixarCsv($url, $cacheKey);
-            $linhas = $csv === null ? [] : $parser($csv);
-        }
-
-        if (!$linhas) {
-            if (!$falhouAgora) {
-                $this->cacheSet($cacheKey . '_falha', time());
-            }
-            $stale = $this->cacheGet($cacheKey, PHP_INT_MAX);
-            if ($stale !== null) {
-                error_log("[npseventos] {$cacheKey}: download falhou — usando cache vencido");
-                return ['linhas' => $this->reidratarLinhas($stale), 'indisponivel' => false];
-            }
-            return ['linhas' => [], 'indisponivel' => true];
-        }
-
-        $this->cacheSet($cacheKey, $this->desidratarLinhas($linhas));
-        return ['linhas' => $linhas, 'indisponivel' => false];
-    }
-
-    /** DateTime não sobrevive a json_encode/decode — guarda-se a string ISO no cache. */
-    private function desidratarLinhas(array $linhas): array
-    {
-        return array_map(function ($l) {
-            $l['timestamp'] = $l['timestamp'] ? $l['timestamp']->format('c') : null;
-            return $l;
-        }, $linhas);
-    }
-
-    private function reidratarLinhas(array $linhas): array
-    {
-        return array_map(function ($l) {
-            $l['timestamp'] = $l['timestamp'] ? new \DateTime($l['timestamp']) : null;
-            return $l;
-        }, $linhas);
-    }
-
-    /** Baixa o CSV; null em qualquer falha (rede, status != 200 ou corpo HTML de login). */
-    private function baixarCsv(string $url, string $rotulo): ?string
-    {
-        if (!function_exists('curl_init')) {
-            error_log("[npseventos] {$rotulo}: cURL indisponível neste servidor");
-            return null;
-        }
-
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS      => 5,
-            CURLOPT_CONNECTTIMEOUT => 8,
-            CURLOPT_TIMEOUT        => 15,
-            CURLOPT_USERAGENT      => 'AcmeEUA-BI/1.0',
-        ]);
-        $raw    = curl_exec($ch);
-        $errno  = curl_errno($ch);
-        $err    = curl_error($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($errno !== 0 || $raw === false) {
-            error_log("[npseventos] {$rotulo}: erro cURL: {$err}");
-            return null;
-        }
-        if ((int)$status !== 200) {
-            error_log("[npseventos] {$rotulo}: Google respondeu status {$status}");
-            return null;
-        }
-        // Compartilhamento revogado? O Google devolve HTML de login.
-        $inicio = ltrim($raw);
-        if ($inicio === '' || $inicio[0] === '<') {
-            error_log("[npseventos] {$rotulo}: resposta nao e CSV (acesso ao link revogado?)");
-            return null;
-        }
-        return $raw;
-    }
-
-    /** Planilha de quem comprou consulta (109 respostas na sessão em que este dashboard foi criado). */
-    private function parsePlanilhaComprouCsv(string $csv): array
-    {
-        $porTitulo = [
-            'nome'                                                            => 'nome',
-            'cidade em que participou do on the road'                        => 'cidade',
-            'como voce avalia sua experiencia geral no evento?'              => 'expGeral',
-            'como voce avalia o local do evento?'                            => 'local',
-            'como voce avalia o coffee break?'                               => 'coffee',
-            'como voce avalia o palestrante?'                                => 'palestrante',
-            'como voce avalia a recepcao?'                                   => 'recepcao',
-            'como voce avalia os brindes?'                                   => 'brindes',
-            'como voce avalia a abordagem comercial?'                        => 'abordagem',
-            'qual foi o principal fator para fechar a consulta?'             => 'fatorFechamento',
-            'como voce avalia o atendimento comercial?'                      => 'atendimento',
-            'o quanto voce indicaria a acme-eua para amigos ou familiares?' => 'indicacao',
-        ];
-        // Índice 12 ("O que mais influenciou sua decisão?") não é usado pela
-        // medida DAX original e por isso não entra aqui.
-        $ordemPadrao = [
-            0 => 'timestampRaw', 1 => 'nome', 2 => 'cidade', 3 => null,
-            4 => 'expGeral', 5 => 'local', 6 => 'coffee', 7 => 'palestrante',
-            8 => 'recepcao', 9 => 'brindes', 10 => 'abordagem', 11 => 'fatorFechamento',
-            12 => null, 13 => 'atendimento', 14 => 'indicacao',
-        ];
-        $numericos = ['expGeral', 'local', 'coffee', 'palestrante', 'recepcao', 'brindes', 'abordagem', 'atendimento', 'indicacao'];
-
-        return $this->parsePlanilhaGenerica($csv, $porTitulo, $ordemPadrao, $numericos);
-    }
-
-    /** Planilha de quem não comprou consulta (21 respostas na sessão em que este dashboard foi criado). */
-    private function parsePlanilhaNaoComprouCsv(string $csv): array
-    {
-        $porTitulo = [
-            'nome'                                                                     => 'nome',
-            'cidade em que participou do on the road'                                 => 'cidade',
-            'como voce avalia sua experiencia geral no evento?'                       => 'expGeral',
-            'como voce avalia o local do evento?'                                     => 'local',
-            'como voce avalia o coffee break?'                                        => 'coffee',
-            'como voce avalia o palestrante?'                                         => 'palestrante',
-            'como voce avalia a recepcao?'                                            => 'recepcao',
-            'como voce avalia os brindes?'                                            => 'brindes',
-            'como voce avalia a abordagem comercial?'                                 => 'abordagem',
-            'qual foi o principal motivo para nao fechar a consulta?'                 => 'motivoNaoFechou',
-            'apos o evento, seu interesse em morar nos eua'                           => 'interessePosEvento',
-            'qual a chance de iniciar um processo de imigracao nos proximos 12 meses?' => 'chanceImigrar',
-            'o quanto voce indicaria o evento on the road para um amigo ou familiar?' => 'indicacao',
-        ];
-        $ordemPadrao = [
-            0 => 'timestampRaw', 1 => 'nome', 2 => 'cidade',
-            3 => 'expGeral', 4 => 'local', 5 => 'coffee', 6 => 'palestrante',
-            7 => 'recepcao', 8 => 'brindes', 9 => 'abordagem', 10 => 'motivoNaoFechou',
-            11 => 'interessePosEvento', 12 => 'chanceImigrar', 13 => 'indicacao',
-        ];
-        $numericos = ['expGeral', 'local', 'coffee', 'palestrante', 'recepcao', 'brindes', 'abordagem', 'chanceImigrar', 'indicacao'];
-
-        return $this->parsePlanilhaGenerica($csv, $porTitulo, $ordemPadrao, $numericos);
-    }
-
-    /**
-     * Parser comum às duas planilhas: fgetcsv via php://temp (aguenta quebra
-     * de linha dentro de aspas — o cabeçalho da planilha de compradores tem
-     * uma), colunas localizadas pelo nome normalizado do cabeçalho (os
-     * títulos têm espaço à direita inconsistente, ex. "Nome ", " Como você
-     * avalia..."), com fallback posicional.
-     */
-    private function parsePlanilhaGenerica(string $csv, array $porTitulo, array $ordemPadrao, array $numericos): array
-    {
-        $fp = fopen('php://temp', 'r+');
-        if ($fp === false) {
-            error_log('[npseventos] nao foi possivel abrir php://temp');
-            return [];
-        }
-        fwrite($fp, $csv);
-        rewind($fp);
-
-        $header = fgetcsv($fp, 0, ',', '"', self::CSV_ESCAPE);
-        if (!$header) {
-            fclose($fp);
-            return [];
-        }
-
-        $idx = [];
-        foreach ($header as $i => $titulo) {
-            $chave = $porTitulo[$this->normalizarTexto((string)$titulo)] ?? ($ordemPadrao[$i] ?? null);
-            if ($chave !== null && !isset($idx[$chave])) {
-                $idx[$chave] = $i;
-            }
-        }
-        // Timestamp é sempre a 1ª coluna do form do Google — não depende do
-        // nome do cabeçalho.
-        if (!isset($idx['timestampRaw'])) {
-            $idx['timestampRaw'] = 0;
-        }
-
-        $campo = function (array $cols, string $chave) use ($idx): string {
-            return isset($idx[$chave]) ? trim((string)($cols[$idx[$chave]] ?? '')) : '';
-        };
-
-        $camposUsados = array_unique(array_merge(['nome', 'cidade'], array_values($porTitulo)));
-
-        $linhas = [];
-        while (($cols = fgetcsv($fp, 0, ',', '"', self::CSV_ESCAPE)) !== false) {
-            if (count(array_filter($cols, fn($v) => trim((string)$v) !== '')) === 0) {
-                continue; // linha em branco
-            }
+        while ($r = $resultado->fetch_assoc()) {
             $linha = [
-                'timestamp' => $this->parseTimestamp($campo($cols, 'timestampRaw')),
+                'timestamp' => new \DateTime($r['respondidoEm']),
+                'nome'      => (string)$r['nome'],
+                'cidade'    => (string)$r['cidade'],
             ];
-            foreach ($camposUsados as $chave) {
-                $linha[$chave] = in_array($chave, $numericos, true)
-                    ? $this->toFloatOuNull($campo($cols, $chave))
-                    : $campo($cols, $chave);
+            foreach ($campos as $c) {
+                $linha[$c] = in_array($c, $textos, true)
+                    ? (string)($r[$c] ?? '')
+                    : ($r[$c] === null ? null : (float)$r[$c]);
             }
             $linhas[] = $linha;
         }
-        fclose($fp);
+        $stmt->close();
 
-        return $linhas;
+        return ['linhas' => $linhas, 'indisponivel' => !$linhas];
     }
 
     /**
-     * Formato do Google Forms: M/D/AAAA H:MM:SS (locale EUA), confirmado
-     * pelos próprios dados desta planilha — ex. "6/26/2026 15:13:47" só é
-     * válido como mês/dia (dia 26 não existe como mês).
-     */
-    private function parseTimestamp(string $raw): ?\DateTime
-    {
-        $raw = trim($raw);
-        if ($raw === '') {
-            return null;
-        }
-        $dt = \DateTime::createFromFormat('n/j/Y G:i:s', $raw);
-        return $dt ?: null;
-    }
-
-    private function toFloatOuNull(string $v): ?float
-    {
-        $v = trim($v);
-        return ($v === '' || !is_numeric($v)) ? null : (float)$v;
-    }
-
-    /**
-     * Texto -> minúsculo, sem acento e com espaço colapsado. Usado tanto para
-     * localizar coluna pelo cabeçalho quanto para normalizar cidade (a
-     * planilha tem grafias inconsistentes de cidade e cabeçalhos com espaço a
-     * mais). Cópia de consultacom2_controle.php::normalizarTexto() — sem
-     * mb_*, porque nada garante mbstring no servidor.
+     * Texto -> minúsculo, sem acento e com espaço colapsado. Usado para
+     * comparar cidades sem depender de acento ou maiúscula. Cópia de
+     * consultacom2_controle.php::normalizarTexto() — sem mb_*, porque nada
+     * garante mbstring no servidor.
      */
     private function normalizarTexto(string $t): string
     {

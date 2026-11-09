@@ -316,6 +316,24 @@ return [
         'minimoConversasHoje' => 6,
     ],
 
+    // Pesquisa de satisfação dos eventos (NPS)
+    'nps' => [
+        'respostasPorEvento' => [12, 20],
+        'chanceComprou' => 0.80,
+        'fatoresFechamento' => ['Confiança no especialista', 'Clareza do processo', 'Casos de sucesso apresentados', 'Condições de pagamento', 'Atendimento no evento'],
+        'motivosNaoFechou' => ['Valor do investimento', 'Ainda não decidi o momento', 'Preciso conversar com a família', 'Quero comparar com outras empresas', 'Não me encaixo no perfil'],
+        'interessePosEvento' => ['Aumentou muito' => 35, 'Aumentou' => 40, 'Permaneceu igual' => 20, 'Diminuiu' => 5],
+    ],
+
+    // Planilha em que o Comercial 2 anota as consultas realizadas (mês atual e anterior)
+    'planilha' => [
+        // Uma a cada N consultas realizadas fica sem anotação na planilha.
+        'umaACadaSemAnotacao' => 6,
+        // Uma a cada N linhas anotadas tem o e-mail digitado errado.
+        'umaACadaComEmailErrado' => 8,
+        'linhasForaDoCrm' => 3,
+    ],
+
     // Faturas (USD)
     'financeiro' => [
         'chancePaga' => 0.75,

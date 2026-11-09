@@ -69,6 +69,8 @@ foreach ($entradas as $entrada) {
         }
     } elseif (isset($entrada['contem']) && !str_contains($corpo, $entrada['contem'])) {
         $problema = "a página não contém '{$entrada['contem']}'";
+    } elseif (isset($entrada['contemRegex']) && !preg_match($entrada['contemRegex'], $corpo)) {
+        $problema = "a página não satisfaz {$entrada['contemRegex']}";
     }
 
     if ($problema === null) {

@@ -19,6 +19,7 @@ final class Gerador
         'financeiro' => [Financeiro::class, 'gerar'],
         'atendimento' => [Atendimento::class, 'gerar'],
         'jornada' => [Jornada::class, 'gerar'],
+        'fornecedores' => [Fornecedores::class, 'gerar'],
     ];
 
     /** Roda as etapas em ordem. Com $ate, para depois da etapa indicada. */

@@ -7,6 +7,7 @@
  *   'tipo'   'json' ou 'html'
  *   'exigir' (json) caminho no JSON => condição: '>0', '>=N', 'entre:A:B', 'naoVazio', '===false', '===true', 'contem:valor'
  *   'contem' (html) texto que a página precisa conter
+ *   'contemRegex' (html) expressão regular que a página precisa satisfazer
  *   'grupo'  opcional; entradas com grupo só rodam com --apenas=grupo
  *
  * Os parâmetros de cada endpoint são os mesmos que a view manda no fetch.
@@ -39,7 +40,17 @@ $paginas = [
     '/hotel/calendario', '/hotel/relatorio',
 ];
 
-$entradas = array_map(fn($url) => ['url' => $url, 'tipo' => 'html'], $paginas);
+// As páginas da Gestão de Eventos são desenhadas no servidor: cada uma precisa
+// mostrar algo que só existe nos dados gerados (nomes criados em Fornecedores.php).
+$marcadoresHotel = [
+    '/hotel/transportes' => '/(Azul|Gol|Latam|Cometa)</u',
+    '/hotel/equipamentos' => '/Áudio e Vídeo/u',
+    '/hotel/videomakers' => '/Filmes/u',
+    '/hotel/relatorio' => '/\d/u',
+];
+$entradas = array_map(fn($url) => str_starts_with($url, '/hotel')
+    ? ['url' => $url, 'tipo' => 'html', 'contemRegex' => $marcadoresHotel[$url] ?? '/Hotel \p{Lu}\p{Ll}+ \p{Lu}/u']
+    : ['url' => $url, 'tipo' => 'html'], $paginas);
 
 $json = function (string $url, array $exigir = []) {
     return ['url' => $url, 'tipo' => 'json', 'exigir' => $exigir];
@@ -60,7 +71,12 @@ array_push($entradas,
         'global.cadeira_vendida' => '>0',
         'global.consultas_vendidas' => '>0',
     ]),
-    $json("/executive/dados?$ano", ['global.combos_vendidos' => '>0', 'global.faturamento_total' => '>0', 'global.roi' => '>0']),
+    $json("/executive/dados?$ano", [
+        'global.combos_vendidos' => '>0',
+        'global.faturamento_total' => '>0',
+        'global.roi' => '>0',
+        'global.custo_fisico' => '>0',
+    ]),
     $json("/executive/digitalDados?$anoMes"),
     $json("/executive/especialistasDados?$mesAteHoje", ['kpis.agendadas' => '>0', 'kpis.realizadas' => '>0']),
     $json("/executive/especialistasDados?$anoAteHoje", [
@@ -110,6 +126,7 @@ array_push($entradas,
         'totais.combos' => '>0',
         'totais.faturamento' => '>0',
         'totais.oportunidades' => '>0',
+        'totais.custo_fisico' => '>0',
     ]),
     // Prévia: 2 eventos passados e o próximo, nessa ordem.
     $json('/eventos/preview', ['eventos.1.is_proximo' => '===false', 'eventos.2.is_proximo' => '===true']),

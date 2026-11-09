@@ -21,6 +21,11 @@ return [
         afirmar($citam === [], 'ainda citam o BI Explorer: ' . implode(', ', $citam));
     },
 
+    'o README não cita o BI Explorer' => function () {
+        $readme = file_get_contents(dirname(__DIR__, 2) . '/README.md');
+        afirmar(stripos($readme, 'biexplorer') === false && stripos($readme, 'bi explorer') === false, 'o README ainda cita o BI Explorer');
+    },
+
     'a página 404 tem conteúdo' => function () {
         $conteudo = file_get_contents(dirname(__DIR__, 2) . '/paginas/error/404.php');
         afirmar(str_contains($conteudo, 'Página não encontrada'), 'a página 404 continua vazia');

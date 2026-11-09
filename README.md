@@ -2,9 +2,45 @@
 
 Plataforma de dashboards de BI de uma consultoria de imigração para os EUA. Cobre leads, funil comercial, marketing, eventos presenciais, financeiro, atendimento e o pós-venda jurídico. Os dados vêm do CRM, sincronizado num banco MySQL/MariaDB, e cada dashboard é uma tela web com filtros, KPIs, gráficos e tabelas.
 
-São 22 controllers, 88 views e cerca de 73 mil linhas de PHP, além de um design system próprio em CSS. Não há build, npm nem Composer.
+São 21 controllers, 87 views e cerca de 70 mil linhas de PHP, além de um design system próprio em CSS. Não há build, npm nem Composer.
 
-> **Sobre esta cópia.** É uma versão de portfólio. A marca ("Acme EUA"), os nomes de pessoas, os domínios e os IDs de serviços externos são fictícios. Não há credenciais nem dados de clientes. O banco de dados não acompanha o repositório.
+> **Sobre esta cópia.** É uma versão de portfólio. A marca ("Acme EUA"), os nomes de pessoas, os domínios e os IDs de serviços externos são fictícios. Não há credenciais nem dados de clientes: o banco é preenchido por um gerador de dados fictícios que acompanha o repositório.
+
+## Como rodar
+
+Pré-requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e aberto.
+
+```bash
+git clone https://github.com/leonardoss02/Portfolio-BI.git
+cd Portfolio-BI
+docker compose up
+```
+
+Quando aparecer `Pronto em ... s` no terminal, abra **http://localhost:8000** e entre com **demo** / **demo**.
+
+A cada subida o banco é recriado com dados fictícios que terminam no dia de hoje, então os filtros de "mês atual" sempre têm números. Para parar, use `Ctrl+C` (ou `docker compose down`).
+
+**O que visitar:**
+
+| Tela | Endereço |
+|---|---|
+| Executivo | http://localhost:8000/executive |
+| Comercial | http://localhost:8000/comercial |
+| Marketing | http://localhost:8000/marketing |
+| Eventos | http://localhost:8000/eventos |
+| Financeiro | http://localhost:8000/financeiro |
+| Atendimento | http://localhost:8000/chatwoot |
+| Jornada do cliente | http://localhost:8000/helenacastro/jornada |
+| Gestão de Eventos | http://localhost:8000/hotel |
+
+## Telas
+
+| | |
+|---|---|
+| ![Executivo](docs/prints/executivo.png) | ![Comercial](docs/prints/comercial.png) |
+| ![Marketing](docs/prints/marketing.png) | ![Eventos](docs/prints/eventos.png) |
+| ![Financeiro](docs/prints/financeiro.png) | ![Atendimento](docs/prints/atendimento.png) |
+| ![Jornada do cliente](docs/prints/jornada.png) | ![Gestão de Eventos](docs/prints/gestao-eventos.png) |
 
 ## Dashboards
 
@@ -21,7 +57,6 @@ São 22 controllers, 88 views e cerca de 73 mil linhas de PHP, além de um desig
 | Credenciados, Dentistas, NPS | `/credenciados`, `/dentistas`, `/npseventos` | Recortes por segmento e pesquisa de satisfação dos eventos |
 | Vendedores | `/rafaeltorres`, `/julianaprado`, … | Um painel por vendedor. O `/helenacastro` acompanha o dia a dia e traz a **Jornada do cliente**, um fluxograma de coorte montado a partir das etapas que o CRM registra |
 | Gestão de Eventos | `/hotel` | Sistema operacional (não é um dashboard): hotéis, equipamentos, transporte e custos de cada evento |
-| BI Explorer | `/biexplorer` | Exploração livre: o usuário escolhe tabela, colunas e joins, e o sistema monta o SQL somente leitura |
 
 Cada dashboard tem um **dicionário de métricas** (`/{dashboard}/dicionario`). É uma página estática que explica cada número em linguagem de negócio, com a regra técnica recolhida logo abaixo.
 
@@ -31,6 +66,7 @@ Cada dashboard tem um **dicionário de métricas** (`/{dashboard}/dicionario`). 
 - **MySQL/MariaDB** via `mysqli`, sempre com prepared statements
 - **JavaScript puro**, com Chart.js e ApexCharts carregados por CDN
 - **CSS próprio** (`css/bi-theme.css`), com tokens de cor, tema claro e escuro e os componentes comuns (KPI, card, tabela, filtros recolhíveis, dicionário)
+- **Docker Compose** para rodar localmente: PHP 8.3 com Apache e MariaDB 11.4
 
 ## Arquitetura
 
@@ -43,6 +79,37 @@ index.php                       entrada única
 ```
 
 Cada dashboard é um controller. A tela carrega uma vez, e o JavaScript chama o próprio controller (`/{nome}/dados?year=…&months=…`) a cada mudança de filtro. O SQL e o cálculo das métricas ficam em métodos privados do controller. Os dashboards não compartilham camada entre si, então um dashboard pode mudar sem afetar os outros. A exceção é a Gestão de Eventos, que grava no banco e por isso tem camadas próprias em `lib/hotel/` (repositório, schema declarativo, cálculo e importador).
+
+## Base de dados fictícia
+
+O `docker compose up` sobe três serviços: o banco (`db`), o gerador (`seed`), que recria as tabelas e grava os dados, e o site (`app`), que só sobe depois do gerador terminar.
+
+O gerador (`database/seed/`) simula clientes percorrendo a jornada comercial (campanha → lead → cadeira no evento ou consulta digital → consulta → planejamento financeiro → combo → faturas e pós-venda). Por isso os números batem entre os dashboards: a venda que aparece no Executivo é a mesma que vira fatura no Financeiro e caso no Jurídico.
+
+- Cerca de 23 mil leads, 6 mil cards no CRM e 150 mil linhas no total, de 01/01/2025 até hoje
+- Mesma data = mesma base (semente aleatória fixa)
+- Volumes, taxas de conversão e nomes ficam em [`database/seed/config.php`](database/seed/config.php)
+- O modelo de dados está explicado em [`database/README.md`](database/README.md), com diagrama
+
+## Testes
+
+Com o projeto no ar:
+
+```bash
+# testes do gerador (unitários)
+docker compose run --rm --no-deps seed php tests/rodar.php
+
+# teste de fumaça: visita todas as telas e endpoints e exige números nas métricas principais
+APP_ENV_FILE=./docker/app.dev.env docker compose up -d
+docker compose exec app php tests/smoke.php
+```
+
+O teste de fumaça roda com o site em modo DEV, em que qualquer aviso do PHP vira erro. Para provar que nada "envelhece" (anos fixos no código), gere a base para uma data futura e rode o grupo de envelhecimento:
+
+```bash
+docker compose run --rm seed php -d memory_limit=1024M database/seed/gerar.php --hoje=2027-03-15
+docker compose exec app php tests/smoke.php --hoje=2027-03-15 --apenas=envelhecimento
+```
 
 ## Decisões técnicas
 
@@ -65,31 +132,38 @@ Cada dashboard é um controller. A tela carrega uma vez, e o JavaScript chama o 
 - o endpoint de debug `/sql/query` aceita só leitura: lista de comandos permitidos, uma instrução por requisição, rate limit e token comparado com `hash_equals`;
 - o único módulo que grava no banco usa exclusão lógica, nunca `DELETE`.
 
-## Como rodar
+## Sem Docker
 
-Requer PHP 8 com a extensão `mysqli`.
+Com PHP 8 (extensões `mysqli` e `mbstring`) e um MySQL/MariaDB local, como XAMPP ou Laragon:
 
 ```bash
-cp .env.example .env     # preencha DASH_AUTH_USER e DASH_AUTH_PASSWORD (login das páginas)
-php -S 127.0.0.1:8000 index.php
+cp .env.example .env              # preencha DB_DEFAULT_* e DASH_AUTH_USER / DASH_AUTH_PASSWORD
+php -d memory_limit=1024M database/seed/gerar.php   # cria as tabelas e os dados
+php -S localhost:8000 index.php
 ```
 
-Sem banco configurado, as telas dos dashboards e os dicionários abrem, mas os números não carregam. A página inicial e a Gestão de Eventos dependem do banco para abrir. Para ver uma tela completa sem banco, use o modo demonstração, que gera dados fictícios no próprio navegador:
+## Problemas comuns
 
-- `http://127.0.0.1:8000/helenacastro?demo=1`
-- `http://127.0.0.1:8000/helenacastro/jornada?demo=1`
-
-O schema do banco (tabelas de leads, oportunidades, custos de marketing, câmbio etc.) não está incluído nesta cópia.
+- **A porta 8000 (ou 3307) já está em uso.** Escolha outras: `APP_PORTA=8080 DB_PORTA=3308 docker compose up`.
+- **"Cannot connect to the Docker daemon".** O Docker Desktop está fechado: abra-o e espere o ícone indicar que o motor está rodando.
+- **O site não subiu.** Veja o que o gerador disse: `docker compose logs seed`. Se uma checagem falhou, a mensagem diz qual.
+- **Quero recriar a base.** Rode `docker compose up` de novo: o gerador sempre recria tudo com dados até hoje.
+- **Quero ver os dados num cliente SQL.** Conecte em `localhost:3307`, banco `acme_bi`, usuário `acme`, senha `acme`.
+- **Apareceu um arquivo `.env` vazio na pasta.** É o Docker criando o ponto de montagem do `.env` de demonstração. Pode ignorar: ele está no `.gitignore`.
 
 ## Estrutura
 
 ```
-controle/     controllers, um por dashboard
-paginas/      views (fragmentos HTML/PHP) e dicionários de métricas
-template/     um template por dashboard: cabeçalho, menu, tema
-css/          bi-theme.css (design system) e hotel.css
-js/           bi-dashboard.js (dropdowns, formatadores, dicionário) e os scripts do módulo de eventos
-lib/hotel/    camadas do módulo Gestão de Eventos
-mrphp.php     núcleo do framework
-index.php     ponto de entrada
+controle/          controllers, um por dashboard
+paginas/           views (fragmentos HTML/PHP) e dicionários de métricas
+template/          um template por dashboard: cabeçalho, menu, tema
+css/               bi-theme.css (design system) e hotel.css
+js/                bi-dashboard.js (dropdowns, formatadores, dicionário) e os scripts do módulo de eventos
+lib/hotel/         camadas do módulo Gestão de Eventos
+database/          schema.sql, gerador de dados fictícios (seed/) e documentação do modelo
+docker/            imagem PHP e .env de demonstração
+tests/             testes do gerador e teste de fumaça
+docs/              prints das telas e documentos de design
+mrphp.php          núcleo do framework
+index.php          ponto de entrada
 ```

@@ -119,20 +119,29 @@ array_push($entradas,
     $json("/chatwoot/dados?$anoMes"),
     $json("/chatwoot/serie?$anoMes"),
     $json("/chatwoot/detalhe?$anoMes&responsavel=Helena"),
-    $json("/law/dados?$ano"),
+    $json("/law/dados?$ano", ['kpis.casos_totais' => '>0', 'kpis.casos_alta_prioridade' => '>0']),
     $json("/law/grafico?$ano"),
     $json('/law/responsaveis'),
     $json('/law/ciclos'),
-    $json("/law/prioridadeDados?$ano"),
+    $json("/law/prioridadeDados?$ano", ['kpis.casos_alta_prioridade' => '>0']),
     $json("/law/prioridadeGrafico?$ano"),
 
     // Customer Success (Comercial 4)
-    $json("/comercial4/dados?$ano"),
+    $json("/comercial4/dados?$ano", [
+        'kpis.total_clientes' => '>0',
+        'kpis.vendas' => '>0',
+        'kpis.arquiteturas_agendar' => '>0',
+        'kpis.agendadas' => '>0',
+    ]),
     $json("/comercial4/ranking?$ano"),
     $json("/comercial4/performance?$ano"),
     $json("/comercial4/registros?$ano"),
     $json('/comercial4/opcoes'),
-    $json('/comercial4/ligaDados'),
+    $json('/comercial4/ligaDados', [
+        'map.carteira' => 'entre:400:460',
+        'map.eq' => 'entre:370:410',
+        'vendas.semana.qtd' => '>0',
+    ]),
 
     // Segmentos e pesquisas
     $json("/credenciados/dados?$ano", [

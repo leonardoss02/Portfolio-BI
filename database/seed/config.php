@@ -282,6 +282,21 @@ return [
         'profissoes' => ['Cirurgião-dentista', 'Ortodontista', 'Implantodontista'],
     ],
 
+    // -------------------------------------------------------------------------
+    // Campanha de metas do CS ("Liga"). Início, tamanho da carteira, produtos e
+    // IDs de status vêm de controle/comercial4_controle.php.
+    // -------------------------------------------------------------------------
+    'liga' => [
+        // Clientes da carteira com todos os produtos mapeados (a meta do código é 378).
+        'mapeados' => 390,
+        // Status sorteados para cada produto de um cliente mapeado (pesos).
+        'pesosStatus' => [
+            'fechada' => 12, 'em_negociacao' => 10, 'declinada' => 8, 'orcamento_parceiro' => 4,
+            'abordagem' => 20, 'sem_oportunidade' => 30, 'interesse_futuro' => 16,
+        ],
+        'vendasMinimasNaSemana' => 8,
+    ],
+
     // Reais por 1 dólar: passeio aleatório diário entre o mínimo e o máximo.
     'cambio' => [
         'inicial' => 5.45,

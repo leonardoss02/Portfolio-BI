@@ -12,6 +12,12 @@
 
 declare(strict_types=1);
 
+// Script de linha de comando: pela web, responde 404 e não executa nada.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
 $raiz = dirname(__DIR__);
 require __DIR__ . '/lib/afirmar.php';
 

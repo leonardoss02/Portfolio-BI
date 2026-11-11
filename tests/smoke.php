@@ -18,6 +18,12 @@
 
 declare(strict_types=1);
 
+// Script de linha de comando: pela web, responde 404 e não executa nada.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
 $opcoes = getopt('', ['hoje:', 'base:', 'apenas:']);
 $fuso = new DateTimeZone('America/Sao_Paulo');
 $hoje = new DateTimeImmutable($opcoes['hoje'] ?? 'today', $fuso);
@@ -48,7 +54,12 @@ foreach ($entradas as $entrada) {
 
     $problema = null;
     $resumo = '';
-    if ($status !== 200) {
+    if ($entrada['tipo'] === 'bloqueado') {
+        // Arquivos internos (scripts de linha de comando, .env, schema) não podem ser servidos pela web.
+        if (!in_array($status, [403, 404], true)) {
+            $problema = "deveria estar bloqueado, mas respondeu HTTP $status";
+        }
+    } elseif ($status !== 200) {
         $problema = "HTTP $status" . trechoDeErro($corpo);
     } elseif ($entrada['tipo'] === 'json') {
         $dados = json_decode($corpo, true);

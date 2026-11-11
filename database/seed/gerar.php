@@ -13,6 +13,12 @@
 
 declare(strict_types=1);
 
+// Script de linha de comando: pela web, responde 404 e não executa nada.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
 $raiz = dirname(__DIR__, 2);
 foreach (glob(__DIR__ . '/src/*.php') as $classe) {
     require_once $classe;

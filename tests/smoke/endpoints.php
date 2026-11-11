@@ -4,7 +4,7 @@
  *
  * Cada entrada:
  *   'url'    rota com placeholders: {ano} {mes} {hoje} {inicioMes} {inicioAno} {ha29dias} {anoAnterior}
- *   'tipo'   'json' ou 'html'
+ *   'tipo'   'json', 'html' ou 'bloqueado' (precisa responder 403 ou 404)
  *   'exigir' (json) caminho no JSON => condição (ou lista de condições): '>0', '>=N', 'entre:A:B',
  *            'naoVazio', '===false', '===true', 'contem:valor'. No caminho, '*' percorre uma lista
  *            ('linhas.*.status' = o status de cada linha).
@@ -250,6 +250,11 @@ foreach (['rafaeltorres', 'julianaprado', 'camiladuarte', 'beatrizlemos'] as $ve
         $json("/$vendedor/forms"),
         $json("/$vendedor/eventosDados?$ano", $exigirEventos),
     );
+}
+
+// Arquivos internos não podem ser servidos pela web (403 ou 404).
+foreach (['/database/seed/gerar.php', '/tests/rodar.php', '/tests/smoke.php', '/docker/app.env', '/database/schema.sql', '/database/seed/config.php'] as $interno) {
+    $entradas[] = ['url' => $interno, 'tipo' => 'bloqueado'];
 }
 
 // Envelhecimento: gere a base com --hoje=2027-03-15 e rode com --apenas=envelhecimento.

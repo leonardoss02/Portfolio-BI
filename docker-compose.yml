@@ -18,7 +18,7 @@ services:
     tmpfs:
       - /var/lib/mysql
     ports:
-      - "${DB_PORTA:-3307}:3306"
+      - "127.0.0.1:${DB_PORTA:-3307}:3306"
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 2s
@@ -27,6 +27,7 @@ services:
 
   seed:
     image: portfolio-bi/php
+    pull_policy: build
     build: docker/php
     command: php -d memory_limit=1024M database/seed/gerar.php
     volumes:
@@ -38,9 +39,10 @@ services:
 
   app:
     image: portfolio-bi/php
+    pull_policy: build
     build: docker/php
     ports:
-      - "${APP_PORTA:-8000}:80"
+      - "127.0.0.1:${APP_PORTA:-8000}:80"
     volumes:
       - ./:/var/www/html
       - ${APP_ENV_FILE:-./docker/app.env}:/var/www/html/.env:ro

@@ -61,8 +61,11 @@ final class Calendario
     public function momento(DateTimeImmutable $dia, Aleatorio $s, int $horaMin = 8, int $horaMax = 21): DateTimeImmutable
     {
         $momento = $dia->setTime($s->inteiro($horaMin, $horaMax), $s->inteiro(0, 59), $s->inteiro(0, 59));
+        // O recuo é sorteado sempre, mesmo sem uso: assim a sequência de sorteios
+        // não depende da hora em que se gera, e o resto da base sai igual.
+        $recuo = $s->inteiro(0, 59);
         if ($momento > $this->agora) {
-            $momento = max($this->agora->modify('-' . $s->inteiro(0, 59) . ' minutes'), $dia->setTime(0, 0));
+            $momento = max($this->agora->modify("-$recuo minutes"), $dia->setTime(0, 0));
         }
         return $momento;
     }

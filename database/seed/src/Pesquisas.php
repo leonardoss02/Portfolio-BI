@@ -40,7 +40,8 @@ final class Pesquisas
                 $resposta = [
                     'idEvento_npsEvento' => $id,
                     'tipo_npsEvento' => $comprou ? 'comprou' : 'nao_comprou',
-                    'respondidoEm_npsEvento' => min($ctx->calendario->momento($data->modify('+' . $s->inteiro(0, 3) . ' days'), $s), $ctx->agora),
+                    // A resposta pode cair depois de hoje (evento recente): limita a agora.
+                    'respondidoEm_npsEvento' => $ctx->limitar($ctx->calendario->momento($data->modify('+' . $s->inteiro(0, 3) . ' days'), $s), $id + $i),
                     'nome_npsEvento' => Pessoas::novoCliente($ctx)['nome'],
                     'cidade_npsEvento' => $evento['cidade_evento'],
                 ];
@@ -82,7 +83,7 @@ final class Pesquisas
                 continue;
             }
             // Uma a cada N linhas tem o e-mail digitado errado (casa só pelo nome: "OK (nome)").
-            $email = ++$anotadas % $cfg['umaACadaComEmailErrado'] === 0 ? 'x' . $d['email_dealV2'] : $d['email_dealV2'];
+            $email = ++$anotadas % $cfg['umaACadaComEmailErrado'] === 1 ? 'x' . $d['email_dealV2'] : $d['email_dealV2'];
             self::linha($ctx, $d['nome_dealV2'], $email, $realizada, $d['responsavel_dealV2']);
         }
 

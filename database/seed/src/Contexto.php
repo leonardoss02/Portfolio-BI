@@ -48,6 +48,20 @@ final class Contexto
         );
     }
 
+    /**
+     * Um horário que não passa de agora. Quando passaria, recua de 1 a 59
+     * minutos conforme $variacao (ex.: o id do registro), para os horários
+     * não se empilharem todos no mesmo instante. Não gasta sorteio.
+     */
+    public function limitar(DateTimeImmutable $momento, int $variacao): DateTimeImmutable
+    {
+        if ($momento <= $this->agora) {
+            return $momento;
+        }
+        $recuado = $this->agora->modify('-' . (abs($variacao) % 59 + 1) . ' minutes');
+        return max($recuado, $this->agora->setTime(0, 0));
+    }
+
     /** Volume ajustado pela escala do config (os testes usam escala 0.1). */
     public function escalar(float $quantidade): float
     {

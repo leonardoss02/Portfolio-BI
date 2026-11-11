@@ -62,13 +62,13 @@ final class Cards
         }
         // motivoDescarte é NOT NULL no banco: sem motivo, fica vazio.
         $card += ['motivoDescarte_dealV2' => ''];
+        $card['idBitrix_dealV2'] = $ctx->base->novoIdBitrix('deal');
         // Nenhum horário depois de agora (ex.: card criado minutos depois de uma venda de hoje).
-        foreach (['criadoEm_dealV2', 'dataVenda_dealV2', 'dataUltForm_dealV2'] as $campo) {
-            if (($card[$campo] ?? null) instanceof DateTimeInterface && $card[$campo] > $ctx->agora) {
-                $card[$campo] = $ctx->agora;
+        foreach (['criadoEm_dealV2', 'dataVenda_dealV2', 'dataUltForm_dealV2'] as $i => $campo) {
+            if (($card[$campo] ?? null) instanceof DateTimeInterface) {
+                $card[$campo] = $ctx->limitar($card[$campo], (int) $card['idBitrix_dealV2'] + $i);
             }
         }
-        $card['idBitrix_dealV2'] = $ctx->base->novoIdBitrix('deal');
         return $ctx->base->inserir('dealV2', $card);
     }
 }

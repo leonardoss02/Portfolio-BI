@@ -30,7 +30,7 @@ final class Atendimento
         foreach ($ctx->base->linhas('leadV2') as $id => $lead) {
             if ($s->chance($cfg['chanceConversa'])) {
                 $inicio = $lead['dataUltForm_leadV2']->modify('+' . $s->inteiro(0, 120) . ' minutes');
-                self::conversa($ctx, $lead, min($inicio, $ctx->agora), array_keys($vendas[$id] ?? []));
+                self::conversa($ctx, $lead, $ctx->limitar($inicio, $id), array_keys($vendas[$id] ?? []));
             }
         }
 
@@ -46,11 +46,14 @@ final class Atendimento
         $cfg = $ctx->config['atendimento'];
         $s = $ctx->sorteio;
         $equipe = $ctx->config['equipe'];
+        // Horários depois da conversa: nunca depois de agora, nem antes da própria conversa.
+        $variacao = (int) $lead['idBitrix_leadV2'];
+        $depois = fn(DateTimeImmutable $momento, int $extra) => max($criadaEm, $ctx->limitar($momento, $variacao + $extra));
 
         $resposta = match (true) {
             !$doTime && $s->chance($cfg['chanceSemResposta']) => null,
             !$doTime && $s->chance($cfg['chanceSentinela']) => self::SEM_RESPOSTA,
-            default => min($criadaEm->modify('+' . $s->inteiro(1, 240) . ' minutes'), $ctx->agora),
+            default => $depois($criadaEm->modify('+' . $s->inteiro(1, 240) . ' minutes'), 7),
         };
         if ($s->chance(0.15)) {
             $rotulos[] = 'lead-quente';
@@ -67,7 +70,7 @@ final class Atendimento
             'telefoneRemetenteMeta_conversaCW' => $lead['telefoneTexto_leadV2'],
             'criadoEm_conversaCW' => $criadaEm,
             'primeiraRespostaEm_conversaCW' => $resposta,
-            'ultimaAtividadeEm_conversaCW' => min($criadaEm->modify('+' . $s->inteiro(1, 72) . ' hours'), $ctx->agora),
+            'ultimaAtividadeEm_conversaCW' => $depois($criadaEm->modify('+' . $s->inteiro(1, 72) . ' hours'), 13),
         ]);
 
         // Mensagens: a primeira é sempre do cliente na maioria das conversas.
@@ -77,7 +80,7 @@ final class Atendimento
             $ctx->base->inserir('msgCW', [
                 'id_conversaCW' => $id,
                 'tipo_msgCW' => $recebida ? $s->um(['incoming', '0']) : $s->um(['outgoing', '1']),
-                'criadoEm_msgCW' => min($criadaEm->modify("+$i minutes"), $ctx->agora),
+                'criadoEm_msgCW' => $depois($criadaEm->modify("+$i minutes"), $i),
             ]);
         }
     }

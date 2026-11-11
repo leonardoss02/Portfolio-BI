@@ -28,6 +28,32 @@ return [
         }
     },
 
+    'a hora em que se gera não muda o resto da base' => function () {
+        $gerar = function (string $agora): Contexto {
+            $ctx = Contexto::criar('2026-11-09', configDeTeste(0.05), new DateTimeImmutable($agora));
+            Gerador::rodar($ctx);
+            return $ctx;
+        };
+        $manha = $gerar('2026-11-09 10:00:00');
+        $noite = $gerar('2026-11-09 23:59:59');
+        afirmarIgual(
+            array_column($manha->base->linhas('leadV2'), 'nome_leadV2'),
+            array_column($noite->base->linhas('leadV2'), 'nome_leadV2'),
+            'os leads mudaram com a hora'
+        );
+        afirmarIgual($manha->base->total('dealV2'), $noite->base->total('dealV2'), 'a quantidade de cards mudou com a hora');
+    },
+
+    'horários de hoje não se acumulam todos em agora' => function () {
+        $agora = new DateTimeImmutable('2026-11-09 10:30:00');
+        $ctx = Contexto::criar('2026-11-09', configDeTeste(0.1), $agora);
+        Gerador::rodar($ctx);
+        foreach (['conversaCW' => 'criadoEm_conversaCW', 'conversaCW ' => 'ultimaAtividadeEm_conversaCW', 'dealV2' => 'criadoEm_dealV2'] as $tabela => $campo) {
+            $exatos = array_filter($ctx->base->linhas(trim($tabela)), fn($l) => ($l[$campo] ?? null) instanceof DateTimeInterface && $l[$campo] == $agora);
+            afirmar(count($exatos) <= 2, count($exatos) . " registros de " . trim($tabela) . ".$campo exatamente em agora");
+        }
+    },
+
     'a mesma data gera exatamente a mesma base' => function () {
         $assinatura = function (): string {
             $ctx = contextoDeTeste('2026-11-09', 0.05);

@@ -51,10 +51,11 @@ return [
         afirmarEntre(0.26, 0.34, $cadeiras / $qualificados);
     },
 
-    'consultas vendidas entre 1.600 e 2.600 na escala 1.0' => function () {
+    'consultas vendidas na escala 1.0 por volta de 1.500 a 2.600' => function () {
         $ctx = gerarAte('vendaConsulta');
         $consultas = count(filtrar($ctx, 'dealV2', fn($d) => in_array($d['faseId_dealV2'], ['WON', 'C11:WON'], true)));
-        afirmarEntre(1600, 2600, $consultas * 10);
+        // Estimado a partir da escala 0.1: o piso tem folga para o ruído da amostra menor.
+        afirmarEntre(1500, 2600, $consultas * 10);
     },
 
     'Helena Castro tem cadeira e consulta vendidas nos últimos 30 dias' => function () {

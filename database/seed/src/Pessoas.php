@@ -18,7 +18,7 @@ final class Pessoas
     }
 
     /**
-     * Um cliente fictício. O e-mail usa o domínio reservado exemplo.com e um
+     * Um cliente fictício. O e-mail usa o domínio reservado exemplo.test (o TLD .test não existe na internet) e um
      * número sequencial, então nunca se repete.
      *
      * @return array{primeiroNome: string, sobrenome: string, nome: string, email: string, telefone: string}
@@ -34,7 +34,7 @@ final class Pessoas
             'primeiroNome' => $primeiro,
             'sobrenome' => $sobrenome,
             'nome' => "$primeiro $sobrenome",
-            'email' => self::semAcento($primeiro) . '.' . self::semAcento($sobrenome) . $numero . '@exemplo.com',
+            'email' => self::semAcento($primeiro) . '.' . self::semAcento($sobrenome) . $numero . '@exemplo.test',
             'telefone' => sprintf('+55 (%s) 9%04d-%04d', $s->um(self::DDDS), $s->inteiro(0, 9999), $s->inteiro(0, 9999)),
         ];
     }

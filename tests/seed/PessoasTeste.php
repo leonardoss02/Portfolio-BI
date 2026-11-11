@@ -46,13 +46,13 @@ return [
         });
     },
 
-    'novoCliente usa @exemplo.com e não repete e-mail' => function () {
+    'novoCliente usa o domínio reservado @exemplo.test e não repete e-mail' => function () {
         $ctx = contextoDeTeste();
         $emails = [];
         for ($i = 0; $i < 5000; $i++) {
             $cliente = Pessoas::novoCliente($ctx);
-            afirmar(str_ends_with($cliente['email'], '@exemplo.com'), "e-mail fora do domínio: {$cliente['email']}");
-            afirmar(preg_match('/^[a-z0-9.]+@exemplo\.com$/', $cliente['email']) === 1, "e-mail com caractere inválido: {$cliente['email']}");
+            afirmar(str_ends_with($cliente['email'], '@exemplo.test'), "e-mail fora do domínio: {$cliente['email']}");
+            afirmar(preg_match('/^[a-z0-9.]+@exemplo\.test$/', $cliente['email']) === 1, "e-mail com caractere inválido: {$cliente['email']}");
             afirmarIgual($cliente['primeiroNome'] . ' ' . $cliente['sobrenome'], $cliente['nome']);
             afirmar(preg_match('/^\+55 \(\d{2}\) 9\d{4}-\d{4}$/', $cliente['telefone']) === 1, "telefone fora do padrão: {$cliente['telefone']}");
             $emails[$cliente['email']] = true;

@@ -97,7 +97,7 @@ final class Fornecedores
             $viagem = $data->modify('-1 day')->format('Y-m-d');
             $linhas[] = $comum('transporte', $viagem, $s->decimal(400, 2500)) + [
                 'modal_fornecedorEvento' => $s->ponderado(['aviao' => 70, 'onibus' => 20, 'uber' => 10]),
-                'companhia_fornecedorEvento' => $s->um(['Azul', 'Gol', 'Latam', 'Cometa']),
+                'companhia_fornecedorEvento' => $s->um(['Aerovia Horizonte', 'VoaSul', 'Alto Voo', 'Expresso Serra Azul']),
                 'trecho_fornecedorEvento' => 'São Paulo → ' . $evento['cidade_evento'],
                 'dataViagem_fornecedorEvento' => $viagem,
                 'quantidade_fornecedorEvento' => $s->inteiro(1, 3),

@@ -45,7 +45,7 @@ $paginas = [
 // As páginas da Gestão de Eventos são desenhadas no servidor: cada uma precisa
 // mostrar algo que só existe nos dados gerados (nomes criados em Fornecedores.php).
 $marcadoresHotel = [
-    '/hotel/transportes' => '/(Azul|Gol|Latam|Cometa)</u',
+    '/hotel/transportes' => '/(Aerovia Horizonte|VoaSul|Alto Voo|Expresso Serra Azul)</u',
     '/hotel/equipamentos' => '/Áudio e Vídeo/u',
     '/hotel/videomakers' => '/Filmes/u',
     '/hotel/relatorio' => '/\d/u',

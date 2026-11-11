@@ -4,7 +4,7 @@
 |---|---|
 | **Data** | 09/11/2026 |
 | **Branch** | `feature/base-ficticia` |
-| **Status** | Aguardando revisão |
+| **Status** | Implementada |
 
 ## 1. Objetivo
 
@@ -301,7 +301,7 @@ Para nenhum ramo do código ficar sem dado:
 ### 6.7 Identidade
 
 - **Equipe interna:** exatamente os nomes fixos no código, cada um no seu papel (Apêndice A). Precisam bater letra por letra, porque o código compara strings em PHP.
-- **Clientes:** nomes brasileiros combinados de listas (nome + sobrenome). E-mails só em domínio reservado para exemplo (`@exemplo.com`), telefones fictícios.
+- **Clientes:** nomes brasileiros combinados de listas (nome + sobrenome). E-mails só no domínio reservado `@exemplo.test` (o TLD `.test` não existe na internet), telefones fictícios. Companhias de transporte, hotéis e fornecedores têm nomes inventados.
 - Nenhuma marca, pessoa ou domínio real. A marca continua "Acme EUA".
 
 ## 7. Mudanças no código

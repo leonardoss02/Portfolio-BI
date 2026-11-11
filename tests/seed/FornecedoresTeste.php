@@ -21,6 +21,16 @@ return [
         afirmarIgual(count($presenciais), $ctx->base->total('custoEvento'), 'um custoEvento por evento presencial');
     },
 
+    'transporte usa companhias fictícias, nunca marcas reais' => function () {
+        $ctx = gerarAte('fornecedores');
+        $reais = ['Azul', 'Gol', 'Latam', 'LATAM', 'Cometa', 'Avianca'];
+        $companhias = array_unique(array_column(filtrar($ctx, 'fornecedorEvento', fn($f) => $f['categoria_fornecedorEvento'] === 'transporte'), 'companhia_fornecedorEvento'));
+        afirmar(count($companhias) > 0, 'nenhum transporte');
+        foreach ($companhias as $companhia) {
+            afirmar(!in_array($companhia, $reais, true), "marca real no transporte: $companhia");
+        }
+    },
+
     'há hotel nos próximos 7 dias e entre 8 e 30 dias' => function () {
         $ctx = gerarAte('fornecedores');
         $hoje = $ctx->hoje;

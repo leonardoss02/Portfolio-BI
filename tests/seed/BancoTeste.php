@@ -11,6 +11,21 @@ return [
         }
     },
 
+    'prepararStorage deixa .mrphp gravável por qualquer usuário' => function () {
+        $raiz = sys_get_temp_dir() . '/storage-' . uniqid();
+        mkdir($raiz);
+        try {
+            Banco::prepararStorage($raiz);
+            foreach (['.mrphp', '.mrphp/rate', '.mrphp/cache'] as $pasta) {
+                afirmar(is_dir("$raiz/$pasta"), "$pasta não foi criada");
+                afirmarIgual('0777', substr(sprintf('%o', fileperms("$raiz/$pasta")), -4), "permissão de $pasta");
+            }
+            afirmar(is_file("$raiz/.mrphp/.htaccess") && is_file("$raiz/.mrphp/index.php"), 'faltam os arquivos de proteção');
+        } finally {
+            exec('rm -rf ' . escapeshellarg($raiz));
+        }
+    },
+
     'montarInsert ignora chaves com _' => function () {
         $sql = Banco::montarInsert('evento', [['nome_evento' => 'A', '_interno' => 'x']]);
         afirmar(!str_contains($sql, '_interno'), "a SQL contém a chave interna: $sql");

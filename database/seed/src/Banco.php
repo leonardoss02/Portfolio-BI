@@ -101,6 +101,30 @@ final class Banco
         return "INSERT INTO `$tabela` ($listaColunas) VALUES " . implode(',', $valores);
     }
 
+    /**
+     * Cria a pasta interna do framework (.mrphp, com rate/ e cache/) gravável
+     * por qualquer usuário. No Linux, o código entra no container com o dono do
+     * host e o Apache (www-data) não consegue criá-la sozinho: sem isto, todas
+     * as páginas dariam erro 500. O seed roda como root, então prepara antes.
+     */
+    public static function prepararStorage(string $raizProjeto): void
+    {
+        $base = rtrim($raizProjeto, '/') . '/.mrphp';
+        foreach ([$base, "$base/rate", "$base/cache"] as $pasta) {
+            if (!is_dir($pasta)) {
+                mkdir($pasta, 0777, true);
+            }
+            chmod($pasta, 0777);
+        }
+        // Os mesmos arquivos de proteção que o framework cria (mrphp.php, inicializarStorage).
+        if (!is_file("$base/.htaccess")) {
+            file_put_contents("$base/.htaccess", "Order deny,allow\nDeny from all\n");
+        }
+        if (!is_file("$base/index.php")) {
+            file_put_contents("$base/index.php", "<?php exit;\n");
+        }
+    }
+
     /** Apaga o cache JSON dos dashboards, para não mostrar números antigos. */
     public static function limparCache(string $dirCache): int
     {

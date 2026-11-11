@@ -48,6 +48,7 @@ if (!isset($opcoes['sem-banco'])) {
     $db = Banco::conectar(Banco::lerEnv($raiz . '/.env'));
     Banco::aplicarSchema($db, $raiz . '/database/schema.sql');
     Banco::gravar($db, $ctx->base);
+    Banco::prepararStorage($raiz);
     $apagados = Banco::limparCache($raiz . '/.mrphp/cache');
     echo "Banco recriado. Cache limpo ({$apagados} arquivos).\n";
 }

@@ -46,7 +46,8 @@ if ($falhas) {
     foreach ($falhas as $falha) {
         echo "✘ $falha\n";
     }
-    echo "A base não foi gravada. Corrija o gerador ou rode `docker compose up --build` de novo.\n";
+    echo "A base não foi gravada: é um erro do gerador (veja as mensagens acima).\n";
+    echo "Para tentar de novo: docker compose down && docker compose up\n";
     exit(1);
 }
 

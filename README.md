@@ -86,8 +86,8 @@ O `docker compose up` sobe três serviços: o banco (`db`), o gerador (`seed`), 
 
 O gerador (`database/seed/`) simula clientes percorrendo a jornada comercial (campanha → lead → cadeira no evento ou consulta digital → consulta → planejamento financeiro → combo → faturas e pós-venda). Por isso os números batem entre os dashboards: a venda que aparece no Executivo é a mesma que vira fatura no Financeiro e caso no Jurídico.
 
-- Cerca de 23 mil leads, 6 mil cards no CRM e 150 mil linhas no total, de 01/01/2025 até hoje
-- Mesma data = mesma base (semente aleatória fixa)
+- Cerca de 23 mil leads, 6 mil cards no CRM e perto de 200 mil linhas no total, de 01/01/2025 até hoje (o volume cresce com o tempo)
+- Mesma data = mesma base (semente aleatória fixa); só os horários de hoje acompanham a hora em que o gerador roda
 - Volumes, taxas de conversão e nomes ficam em [`database/seed/config.php`](database/seed/config.php)
 - O modelo de dados está explicado em [`database/README.md`](database/README.md), com diagrama
 
@@ -100,7 +100,7 @@ Com o projeto no ar:
 docker compose run --rm --no-deps seed php tests/rodar.php
 
 # teste de fumaça: visita todas as telas e endpoints e exige números nas métricas principais
-APP_ENV_FILE=./docker/app.dev.env docker compose up -d
+APP_ENV_FILE=./docker/app.dev.env docker compose up -d      # no PowerShell: $env:APP_ENV_FILE='./docker/app.dev.env'; docker compose up -d
 docker compose exec app php tests/smoke.php
 ```
 
@@ -134,7 +134,9 @@ docker compose exec app php tests/smoke.php --hoje=2027-03-15 --apenas=envelheci
 
 ## Sem Docker
 
-Com PHP 8 (extensões `mysqli` e `mbstring`) e um MySQL/MariaDB local, como XAMPP ou Laragon:
+Com PHP 8 (extensões `mysqli` e `mbstring`) e um MySQL/MariaDB local, como XAMPP ou Laragon.
+
+> **Use um banco vazio, criado só para isto.** O gerador apaga e recria 18 tabelas com nomes comuns (`evento`, `invoice`, `deal`…); num banco que já tenha tabelas com esses nomes, os dados delas seriam perdidos.
 
 ```bash
 cp .env.example .env              # preencha DB_DEFAULT_* e DASH_AUTH_USER / DASH_AUTH_PASSWORD
@@ -144,12 +146,15 @@ php -S localhost:8000 index.php
 
 ## Problemas comuns
 
-- **A porta 8000 (ou 3307) já está em uso.** Escolha outras: `APP_PORTA=8080 DB_PORTA=3308 docker compose up`.
+- **A porta 8000 (ou 3307) já está em uso.** Escolha outras e abra o site na porta nova (ex.: http://localhost:8080):
+  - PowerShell (Windows): `$env:APP_PORTA=8080; $env:DB_PORTA=3308; docker compose up`
+  - Mac/Linux (bash, zsh): `APP_PORTA=8080 DB_PORTA=3308 docker compose up`
 - **"Cannot connect to the Docker daemon".** O Docker Desktop está fechado: abra-o e espere o ícone indicar que o motor está rodando.
 - **O site não subiu.** Veja o que o gerador disse: `docker compose logs seed`. Se uma checagem falhou, a mensagem diz qual.
 - **Quero recriar a base.** Rode `docker compose up` de novo: o gerador sempre recria tudo com dados até hoje.
 - **Quero ver os dados num cliente SQL.** Conecte em `localhost:3307`, banco `acme_bi`, usuário `acme`, senha `acme`.
 - **Apareceu um arquivo `.env` vazio na pasta.** É o Docker criando o ponto de montagem do `.env` de demonstração. Pode ignorar: ele está no `.gitignore`.
+- **No começo do ano, alguns cards aparecem zerados.** Os dashboards abrem no ano corrente, e nos primeiros dias de janeiro ainda há pouco movimento no ano (uma fatura só fica "inadimplente" depois de 60 dias de atraso, por exemplo). Escolha o ano anterior no filtro para ver o ano completo.
 
 ## Estrutura
 
